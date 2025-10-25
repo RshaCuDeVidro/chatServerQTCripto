@@ -1,0 +1,16 @@
+<RCC>
+    <qresource>
+        <file>DesignIRC_QML.qmlproject</file>
+        <file>DesignIRC_QML/Constants.qml</file>
+        <file>DesignIRC_QML/EventListModel.qml</file>
+        <file>DesignIRC_QML/EventListSimulator.qml</file>
+        <file>DesignIRC_QML/qmldir</file>
+        <file>DesignIRC_QMLContent/qml/components/ChannelList.qml</file>
+        <file>DesignIRC_QMLContent/qml/components/ChatArea.qml</file>
+        <file>DesignIRC_QMLContent/qml/components/InputBar.qml</file>
+        <file>DesignIRC_QMLContent/qml/components/UserList.qml</file>
+        <file>DesignIRC_QMLContent/qml/main.qml</file>
+        <file>DesignIRC_QMLContent/qml/Screen01.ui.qml</file>
+        <file>qtquickcontrols2.conf</file>
+    </qresource>
+</RCC>
