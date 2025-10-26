@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Studio.DesignEffects
 
 Rectangle {
     id: inputBar
@@ -21,17 +22,21 @@ Rectangle {
 
             TextField {
                 id: messageField
+                color:  "white"
                 Layout.fillWidth: true
                 placeholderText: "Digite sua mensagem..."
-                color: "white"
                 wrapMode: Text.NoWrap
                 focus: true
                 overwriteMode: true
                 activeFocusOnPress: true
-                placeholderTextColor: "#7561f2"
+                //placeholderTextColor: "#7561f2"
+                placeholderTextColor: "#ffffff"
                 background: Rectangle {
-                    color: "#40444b"
-                    radius: 4
+                    //color: "#40444b"
+                    color: "#2C2C3F"
+                    //radius: 4
+                    radius: 8
+                    border.color: "#c800ff"
                 }
 
                 Keys.onEnterPressed:{
@@ -47,6 +52,28 @@ Rectangle {
                         messageField.text = ""
                     }
                 }
+
+                DesignEffect {
+                    visible: true
+                    effects: [
+                        DesignDropShadow {
+                            color: "#C800FF"
+                            offsetX: 0
+                            offsetY: 2
+                            //offsetX: 4
+                            showBehind: false
+                            blur: 20
+
+                        },
+                        DesignInnerShadow {
+                            color: "#C800FF"
+                            offsetY: 1
+                            //offsetX: 4
+                            showBehind: false
+                            blur: 20
+                        }
+                    ]
+                }
             }
 //#5a8fd9
 //#2f02c4
@@ -54,11 +81,14 @@ Rectangle {
                 id: sendButton
                 visible: true
                 text: "Enviar"
-                flat: false
+                icon.color: "#ffffff"
                 highlighted: true
-                 background:Rectangle {
-                     color: "#7561f2"
-                     radius: 4
+                background:Rectangle {
+                    //color: "#8A2BE2"
+                     //radius: 4
+                    color: "#2C2C3F"
+                     radius: 8
+                     border.color: "#c800ff"
                 }
                 Layout.bottomMargin: 3
                 icon.width: 25
@@ -83,6 +113,28 @@ Rectangle {
                         sendMessage(messageField.text)
                         messageField.text = ""
                     }
+                }
+
+                DesignEffect {
+                    visible: true
+                    effects: [
+                        DesignDropShadow {
+                            color: "#C800FF"
+                            offsetX: 0
+                            offsetY: 2
+                            //offsetX: 4
+                            showBehind: false
+                            blur: 20
+
+                        },
+                        DesignInnerShadow {
+                            color: "#C800FF"
+                            offsetY: 1
+                            //offsetX: 4
+                            showBehind: false
+                            blur: 20
+                        }
+                    ]
                 }
 
 

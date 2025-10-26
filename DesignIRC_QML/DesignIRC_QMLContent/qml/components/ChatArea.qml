@@ -11,6 +11,22 @@ Rectangle {
         color: "transparent"
 
 
+        ListModel {
+                    id: chatModel
+                    ListElement{message: "c "; is_self: true}
+                    ListElement{message: "c "; is_self: true}
+                    ListElement{message: "c "; is_self: true}
+                    ListElement{message: "c "; is_self: true}
+                    ListElement{message: "c "; is_self: true}
+                    ListElement{message: "c "; is_self: false}
+                    ListElement{message: "c "; is_self: false}
+                    ListElement{message: "c "; is_self: false}
+                    ListElement{message: "c "; is_self: true}
+                    ListElement{message: "c "; is_self: false}
+
+                    }
+
+
         ColumnLayout {
             id: column
             anchors.fill: parent
@@ -39,56 +55,68 @@ Rectangle {
                     clip: true
                     reuseItems: true
 
-
-
                     ScrollBar.vertical: ScrollBar{
 
-                        policy: ScrollBar.AsNeeded
+                                        policy: ScrollBar.AsNeeded
+
+                    }
+
+                    model: chatModel
+
+                    delegate: Item {
+                                        height: messageContainer.height
+                                        width: chatListView.width
+
+
+                                        Rectangle{
+                                                            id:messageContainer
+                                                            width: chatListView.width * 0.7
+                                                            height: messageText.implicitHeight + 20
+                                                            color: "#7E32BC"
+                                                            radius: 5
+
+                                                            // Lógica de alinhamento testada
+                                                            anchors.right: model.is_self ? parent.right : undefined
+                                        anchors.left: model.is_self ? undefined : parent.left
+                                        //color: model.is_self ? "#dcf8c6" : "#ffffff"
+                                        //border.color: "#e0e0e0"
+
+                                        Text {
+                                                            id: messageText
+
+                                                            text: model.message
+                                                            anchors.fill: parent
+                                                            anchors.margins: 10
+                                                            wrapMode: Text.WordWrap
+
+                                        }
+
+
+
+
+
+
+                        }
 
                     }
 
 
-                    model:ListModel {
-                        id: chatModel
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                         ListElement{message: "c "}
-                    }
-                    delegate: Text {
-                        text: model.message
-                        color: "white"
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 16
-                        width: chatListView.width
-                        textFormat: Text.PlainText
+                    // delegate: Text {
+                    //     text: model.message
+                    //     color: "white"
+                    //     wrapMode: Text.WordWrap
+                    //     font.pixelSize: 16
+                    //     width: chatListView.width
+                    //     textFormat: Text.PlainText
 
-                         // MouseArea {
-                         //                          anchors.fill: parent
-                         //                          acceptedButtons: Qt.LeftButton
-                         //                          onClicked: parent.forceActiveFocus()
-                         //                          onDoubleClicked: parent.selectAll()
-                         // }
+                    //      // MouseArea {
+                    //      //                          anchors.fill: parent
+                    //      //                          acceptedButtons: Qt.LeftButton
+                    //      //                          onClicked: parent.forceActiveFocus()
+                    //      //                          onDoubleClicked: parent.selectAll()
+                    //      // }
 
-                     }
+                    //  }
 
 
                     // MouseArea {
@@ -112,13 +140,13 @@ Rectangle {
         InputBar {
             id: inputBar
             anchors.bottom: parent.bottom
-            anchors.topMargin: -45
+            //anchors.topMargin: -45
             anchors.bottomMargin: 0
 
-            anchors.top: column.bottom
+            //anchors.top: column.bottom
             Layout.fillWidth: true
             onSendMessage: (msg) => {
-                chatModel.append({message: "<Teste> " +  msg})
+                chatModel.append({message: "<Teste> " +  msg, is_self: true})
                 chatListView.positionViewAtEnd() }
         }
 

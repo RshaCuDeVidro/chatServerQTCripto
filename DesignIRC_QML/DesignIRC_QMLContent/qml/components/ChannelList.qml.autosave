@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 Rectangle {
     color: "#1A1A2E"
-    border.color: "#3b0058"//"#202225"
+    //"#202225"
 
         ColumnLayout {
             anchors.fill: parent
@@ -30,7 +30,6 @@ Rectangle {
 
                 model:ListModel{
                     id: channelModel
-                    border.color: "#3b0058"
                     ListElement{name: "general"}
                     ListElement{name:  "crime"}
 
@@ -51,7 +50,7 @@ Rectangle {
                     highlighted: false
 
                     background: Rectangle{
-                        //color: highlighted ? "#393c43" : "transparent"
+                        color: highlighted ? "#393c43" : "202225"
 
                     }
 
