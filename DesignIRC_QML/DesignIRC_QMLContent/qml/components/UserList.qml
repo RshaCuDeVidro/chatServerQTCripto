@@ -26,10 +26,11 @@ Rectangle {
                 activeFocusOnTab: true
                 boundsMovement: Flickable.FollowBoundsBehavior
                 boundsBehavior: Flickable.StopAtBounds
-
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
+                reuseItems: true
+
                 model: ListModel{
                     id: userModel
                     ListElement{name: "User1"}

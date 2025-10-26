@@ -25,6 +25,8 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
+                reuseItems: true
+
                 model:ListModel{
                     id: channelModel
                     ListElement{name: "general"}

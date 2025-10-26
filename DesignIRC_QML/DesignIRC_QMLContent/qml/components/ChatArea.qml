@@ -37,6 +37,8 @@ Rectangle {
                     Layout.fillWidth: true
                     spacing: 4
                     clip: true
+                    reuseItems: true
+
 
 
                     ScrollBar.vertical: ScrollBar{
