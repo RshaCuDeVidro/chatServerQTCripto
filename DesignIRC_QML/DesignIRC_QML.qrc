@@ -8,6 +8,7 @@
         <file>DesignIRC_QMLContent/qml/components/ChannelList.qml</file>
         <file>DesignIRC_QMLContent/qml/components/ChatArea.qml</file>
         <file>DesignIRC_QMLContent/qml/components/InputBar.qml</file>
+        <file>DesignIRC_QMLContent/qml/components/Teste.qml</file>
         <file>DesignIRC_QMLContent/qml/components/UserList.qml</file>
         <file>DesignIRC_QMLContent/qml/main.qml</file>
         <file>DesignIRC_QMLContent/qml/Screen01.ui.qml</file>

@@ -154,7 +154,7 @@ Rectangle {
                             Layout.fillWidth: true
                         }
 
-                        //  mensagens não lidas
+                        // Selo de mensagens não lidas
                         Rectangle {
                             width: 22
                             height: 22

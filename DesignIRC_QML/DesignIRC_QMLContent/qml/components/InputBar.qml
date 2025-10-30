@@ -8,13 +8,39 @@ Rectangle {
     height: 60
     width: parent ? parent.width : 400
     color: "#2f3136"
+    radius: 10
 
     signal sendMessage(string msg)
+
+
+    // DesignEffect {
+    //     visible: true
+    //     effects: [
+    //         DesignDropShadow {
+    //             color: "#C800FF"
+    //             offsetX: 0
+    //             offsetY: 2
+    //             //offsetX: 4
+    //             showBehind: true
+    //             blur: 60
+
+    //         },
+    //         DesignInnerShadow {
+    //             color: "#C800FF"
+    //             offsetY: 1
+    //             //offsetX: 4
+    //             showBehind: true
+    //             blur: 60
+    //         }
+    //     ]
+    // }
 
     Rectangle {
         anchors.fill: parent
         anchors.margins: 8
         color: "transparent"
+
+
 
         RowLayout {
             anchors.fill: parent
