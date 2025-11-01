@@ -12,7 +12,7 @@ def setup_qt_environment(qml_engine: QQmlApplicationEngine):
     """
     Load the QML application. Import the compiled resources when the application is deployed.
     """
-    qml_app_url = "DesignIRC_QMLContent/main.qml"
+    qml_app_url = "DesignIRC_QML/DesignIRC_QMLContent/qml/main.qml"
 
     if "__compiled__" in globals():
         # Application has been deployed using pyside6-deploy
