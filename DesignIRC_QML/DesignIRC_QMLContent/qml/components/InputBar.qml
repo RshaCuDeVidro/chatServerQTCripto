@@ -1,7 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Studio.DesignEffects
+//import QtQuick.Studio.DesignEffects
+import QtQuick.Effects
 
 Rectangle {
     id: inputBar
@@ -11,7 +12,7 @@ Rectangle {
     radius: 10
 
     signal sendMessage(string msg)
-
+    //não uso
 
     // DesignEffect {
     //     visible: true
@@ -79,28 +80,28 @@ Rectangle {
                     }
                 }
 
-                DesignEffect {
-                    visible: true
-                    effects: [
-                        DesignDropShadow {
-                            color: "#C800FF"
-                            offsetX: 0
-                            offsetY: 2
-                            //offsetX: 4
-                            showBehind: false
-                            blur: 20
+            //     DesignEffect {
+            //         visible: true
+            //         effects: [
+            //             DesignDropShadow {
+            //                 color: "#C800FF"
+            //                 offsetX: 0
+            //                 offsetY: 2
+            //                 //offsetX: 4
+            //                 showBehind: false
+            //                 blur: 20
 
-                        },
-                        DesignInnerShadow {
-                            color: "#C800FF"
-                            offsetY: 1
-                            //offsetX: 4
-                            showBehind: false
-                            blur: 20
-                        }
-                    ]
-                }
-            }
+            //             },
+            //             DesignInnerShadow {
+            //                 color: "#C800FF"
+            //                 offsetY: 1
+            //                 //offsetX: 4
+            //                 showBehind: false
+            //                 blur: 20
+            //             }
+            //         ]
+            //     }
+             }
 //#5a8fd9
 //#2f02c4
             Button {
@@ -141,31 +142,29 @@ Rectangle {
                     }
                 }
 
-                DesignEffect {
-                    visible: true
-                    effects: [
-                        DesignDropShadow {
-                            color: "#C800FF"
-                            offsetX: 0
-                            offsetY: 2
-                            //offsetX: 4
-                            showBehind: false
-                            blur: 20
+                // DesignEffect {
+                //     visible: true
+                //     effects: [
+                //         DesignDropShadow {
+                //             color: "#C800FF"
+                //             offsetX: 0
+                //             offsetY: 2
+                //             //offsetX: 4
+                //             showBehind: false
+                //             blur: 20
 
-                        },
-                        DesignInnerShadow {
-                            color: "#C800FF"
-                            offsetY: 1
-                            //offsetX: 4
-                            showBehind: false
-                            blur: 20
-                        }
-                    ]
-                }
-
-
-
+                //         },
+                //         DesignInnerShadow {
+                //             color: "#C800FF"
+                //             offsetY: 1
+                //             //offsetX: 4
+                //             showBehind: false
+                //             blur: 20
+                //         }
+                //     ]
+                // }
             }
         }
     }
 }
+

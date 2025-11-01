@@ -1,7 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Studio.DesignEffects
+//import QtQuick.Studio.DesignEffects
+import QtQuick.Effects
 
 Rectangle {
     id: channelList
@@ -11,7 +12,7 @@ Rectangle {
     //Layout.fillWidth: true
 
     signal channelSelected(string name)
-
+    //não uso
     // DesignEffect {
     //     visible: true
     //     effects: [
@@ -66,24 +67,24 @@ Rectangle {
         anchors.margins: 10
         spacing: 8
 
-        DesignEffect {
-            visible: true
-            effects: [
-                DesignDropShadow {
-                    color: "#C800FF"
-                    showBehind: true
-                    offsetX: 0
-                    offsetY: 2
-                    blur: 20
-                },
-                DesignInnerShadow {
-                    color: "#C800FF"
-                    showBehind: false
-                   offsetY: 1
-                    blur: 20
-                }
-            ]
-        }
+        // DesignEffect {
+        //     visible: true
+        //     effects: [
+        //         DesignDropShadow {
+        //             color: "#C800FF"
+        //             showBehind: true
+        //             offsetX: 0
+        //             offsetY: 2
+        //             blur: 20
+        //         },
+        //         DesignInnerShadow {
+        //             color: "#C800FF"
+        //             showBehind: false
+        //            offsetY: 1
+        //             blur: 20
+        //         }
+        //     ]
+        // }
 
         Label {
             text: "Canais"
