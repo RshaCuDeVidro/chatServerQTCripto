@@ -109,27 +109,22 @@ Rectangle {
                     }
                 }
             }
+        }
 
 
+        InputBar {
+            id: inputBar
 
+            Layout.fillWidth: true
+            onSendMessage: (msg) => {
+                chatModel.append({sender:"Você",message:msg, is_self: true})
+                chatListView.positionViewAtEnd()
+            }
         }
 
     }
 
 
-    InputBar {
-        id: inputBar
-        anchors.bottom: parent.bottom
-        //anchors.topMargin: -45
-        anchors.bottomMargin: 0
-
-        //anchors.top: column.bottom
-        Layout.fillWidth: true
-        onSendMessage: (msg) => {
-            chatModel.append({sender:"Você",message:msg, is_self: true})
-            chatListView.positionViewAtEnd()
-        }
-    }
 }
 
 
