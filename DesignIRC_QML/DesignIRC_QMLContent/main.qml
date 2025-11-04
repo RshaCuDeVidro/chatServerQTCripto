@@ -13,7 +13,7 @@ ApplicationWindow {
 
     Rectangle {
         anchors.fill: parent
-        color: "#0E0E12"
+        //color: "#0E0E12"
         // anchors.margins: 7
         // radius: 15
 
@@ -34,6 +34,7 @@ ApplicationWindow {
 
             // Área central do chat
             ChatArea {
+                id: chatArea
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }

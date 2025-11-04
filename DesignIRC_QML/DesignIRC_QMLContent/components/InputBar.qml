@@ -81,7 +81,7 @@ Rectangle {
             }
 
             RectangularShadow {
-                anchors.fill: sendButton
+                //anchors.fill: sendButton
                 Layout.maximumHeight: 0
                 Layout.maximumWidth: 0
                 cached: true

@@ -62,7 +62,9 @@ Rectangle {
 
         RectangularShadow{
             color: "#C800FF"
-            anchors.fill: container
+            //anchors.fill: container
+            Layout.maximumWidth: 0
+            Layout.maximumHeight: 0
 
             blur: 14
             radius: 8

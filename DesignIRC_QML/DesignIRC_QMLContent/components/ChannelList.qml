@@ -49,7 +49,9 @@ Rectangle {
         spacing: 8
 
         RectangularShadow{
-            anchors.fill: container
+            //anchors.fill: container
+            Layout.maximumHeight: 0
+            Layout.maximumWidth: 0
             color: "#C800FF"
             radius: 8
             blur: 14
@@ -125,6 +127,7 @@ Rectangle {
                 spacing: 6
                 boundsBehavior: Flickable.StopAtBounds
                 model: channelListModel
+                reuseItems: true
 
                 ScrollBar.vertical: ScrollBar {
                     policy: ScrollBar.AsNeeded
