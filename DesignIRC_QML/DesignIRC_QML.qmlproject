@@ -11,6 +11,14 @@ Project {
     widgetApp: true
     importPaths: [ "." ]
 
+    imports: [
+        "QtQuick",
+        "QtQuick.Controls",
+        "QtQuick.Layouts",
+        "Qt5Compat.GraphicalEffects",
+        "QtQuick.Effects"
+    ]
+
     qdsVersion: "4.8"
     quickVersion: "6.8"
     qt6Project: true

@@ -13,7 +13,9 @@ ApplicationWindow {
 
     Rectangle {
         anchors.fill: parent
-        color: "#2b2d31"
+        color: "#0E0E12"
+        // anchors.margins: 7
+        // radius: 15
 
         RowLayout {
             anchors.fill: parent
@@ -21,8 +23,13 @@ ApplicationWindow {
 
             // Lista de canais
             ChannelList {
+                id:channelList
                 Layout.preferredWidth: 180
                 Layout.fillHeight: true
+
+                onChannelSelected: (channelName) =>{
+                    chatArea.currentChannel = channelName
+                }
             }
 
             // Área central do chat
