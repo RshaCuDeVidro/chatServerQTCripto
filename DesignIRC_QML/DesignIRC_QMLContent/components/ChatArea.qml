@@ -59,13 +59,18 @@ Rectangle {
 
                 Rectangle{
                     id:messageContainer
-                    width: chatListView.width * 0.7
-                    height: messageText.implicitHeight + 20
+                    //width: chatListView.width * 0.7
+                    width: messageText.width + senderText.width //* 0.7
+                    //height: messageText.implicitHeight + 20
+                    height: columnChatArea.implicitHeight + 20
                     //color: "#7E32BC"
                     radius: 5
 
                     //color: model.is_self ? "#00E6FF" : "#C800FF"
+
+
                     color: model.is_self ? "#7E32BC" : "#62417D"
+                    //color:  "transparent"
 
                     // Lógica de alinhamento testada
                     anchors.right: model.is_self ? parent.right : undefined
@@ -76,7 +81,10 @@ Rectangle {
                     //border.color: "#e0e0e0"
 
                     ColumnLayout{
-                        width: parent.width
+                        id: columnChatArea
+                        //width: parent.width
+                        anchors.fill: parent
+                        anchors.margins: 10
                         spacing: 4
 
                         Text{
@@ -85,12 +93,13 @@ Rectangle {
 
                             color: model.is_self ? "white" : "#00C8FF"
                             font.bold: true
-                            //Layout.fillWidth: true
-                            // anchors.left: parent.left
-                            // anchors.right: parent.right
-                            anchors.leftMargin: 10
-                            anchors.rightMargin: 10
-                            anchors.topMargin: 10
+                            Layout.fillWidth: true
+
+                            horizontalAlignment: model.is_self ? Text.AlignRight : Text.AlignLeft
+
+                            // anchors.leftMargin: 10
+                            // anchors.rightMargin: 10
+                            // anchors.topMargin: 10
 
                         }
 
@@ -99,12 +108,16 @@ Rectangle {
                             text: model.message
                             color: "white" // Cor do texto explícita
                             wrapMode: Text.WordWrap
-                            //Layout.fillWidth: true
+                            Layout.fillWidth: true
+
+                            horizontalAlignment: model.is_self ? Text.AlignRight : Text.AlignLeft
+
                             // anchors.left: parent.left
                             // anchors.right: parent.right
-                            anchors.leftMargin: 10
-                            anchors.rightMargin: 10
-                            anchors.bottomMargin: 10
+
+                            //anchors.leftMargin: 10
+                            // anchors.rightMargin: 10
+                            // anchors.bottomMargin: 10
                         }
                     }
                 }
