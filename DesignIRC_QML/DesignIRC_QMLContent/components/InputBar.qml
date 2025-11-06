@@ -41,13 +41,12 @@ Rectangle {
                 color:  "white"
                 Layout.fillWidth: true
 
-                Layout.preferredHeight: Math.min(implicitHeight, 120)
-
+                Layout.preferredHeight: messageField.implicitHeight//Math.min(implicitHeight, 120)
+                Layout.maximumHeight: 120
                 placeholderText: "Digite sua mensagem..."
                 wrapMode: Text.WordWrap
                 selectionColor: "#a8c43afc"
                 focus: true
-                overwriteMode: true
                 activeFocusOnPress: true
                 //placeholderTextColor: "#7561f2"
                 placeholderTextColor: "#ffffff"
@@ -104,7 +103,7 @@ Rectangle {
                     if(event.key === Qt.Key_Enter || event.key === Qt.Key_Return){
                         //Shift pressionado
                         if(!(event.modifiers & Qt.ShiftModifier)){
-                            event.accept = true
+                            event.accepted = true
                             if(messageField.text.trim().length > 0){
                                 sendMessage(messageField.text.trim())
                                 messageField.text = ""
@@ -139,7 +138,12 @@ Rectangle {
             Button {
                 id: sendButton
                 visible: true
-                text: "Enviar"
+                text: "➤"
+                font.pixelSize: 18
+
+                Layout.alignment: Qt.AlignBottom
+                Layout.preferredWidth: 40// parent.height
+                Layout.preferredHeight: 40
                 background:Rectangle {
                     id: btReact
                     //color: "#8A2BE2"
@@ -209,25 +213,21 @@ Rectangle {
                 }
 
                 onClicked: {
-                    if (messageField.text.length > 0) {
-                        sendMessage(messageField.text)
+                    if (messageField.text.trim().length > 0) {
+                        sendMessage(messageField.text.trim())
                         messageField.text = ""
                     }
                 }
 
-                Keys.onEnterPressed:{
-                    if(messageField.text.length > 0){
-                        sendMessage(messageField.text)
-                        messageField.text = ""
+                Keys.onPressed: (event) =>{
+                    if(event.Key === Qt.Key_Enter || event.Key === Qt.Key_Return ){
+                        if(messageField.text.trim().length > 0){
+                            sendMessage(messageField.text.trim())
+                            messageField.text = ""
+                            event.accepted = true
+                        }
                     }
                 }
-
-                Keys.onReturnPressed:{
-                    if(messageField.text.length > 0){
-                        sendMessage(messageField.text)
-                        messageField.text = ""
-                    }
-                }            
             }
         }
     }
