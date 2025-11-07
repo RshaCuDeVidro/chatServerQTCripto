@@ -44,7 +44,7 @@ Rectangle {
                 Layout.preferredHeight: messageField.implicitHeight//Math.min(implicitHeight, 120)
                 Layout.maximumHeight: 120
                 placeholderText: "Digite sua mensagem..."
-                wrapMode: Text.WordWrap
+                wrapMode: TextEdit.WordWrap
                 selectionColor: "#a8c43afc"
                 focus: true
                 activeFocusOnPress: true
@@ -220,7 +220,7 @@ Rectangle {
                 }
 
                 Keys.onPressed: (event) =>{
-                    if(event.Key === Qt.Key_Enter || event.Key === Qt.Key_Return ){
+                    if(event.key === Qt.Key_Enter || event.key === Qt.Key_Return ){
                         if(messageField.text.trim().length > 0){
                             sendMessage(messageField.text.trim())
                             messageField.text = ""

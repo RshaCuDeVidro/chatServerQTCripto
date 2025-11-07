@@ -1,37 +1,34 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Qt.labs.qmlmodels
 
 Rectangle {
-    // Fundo da área de chat
-    color: "#2A2B38" // 2C2C3F Cor original do seu arquivo [cite: 35]
+    color: "#2A2B38" // 2C2C3F
+    property string currentChannel: "geral"//tenho que arrumar isso
 
-    // Propriedade para definir o canal atual (Melhoria)
-    property string currentChannel: "geral"
-
-    // O modelo de dados agora inclui um 'sender' (Melhoria)
     ListModel {
         id: chatModel
-        ListElement{ sender: "Você"; message: "aaaaaaaaaaaaaa"; is_self: true}
-        ListElement{ sender: "OutroUser"; message: "bbbbbbbbbbbbbbbbb"; is_self: false}
-        ListElement{ sender: "Você"; message: "cccccccccccccccccccccccccccccccccccccccccccccccccccc"; is_self: true}
-        ListElement{ sender: "Admin"; message: "dddddddddddd❤️🙈😳🤳💀💕💕❤️❤️"; is_self: false}
+        ListElement{ messageType:"self"; sender: "Você"; message: "aaaaaaaaaaaaaa"; is_self: true; timestamp: "2025-11-06T17:30:00Z"; displayDate: "06/11/2025"; displayTime: "17:30"}
+        ListElement{ messageType:"other";sender: "OutroUser"; message: "bbbbbbbbbbbbbbbbb"; is_self: false; timestamp: "2025-11-06T17:31:00Z";displayDate: "06/11/2025"; displayTime: "17:31"}
+        ListElement{ messageType:"other";sender: "Carlos"; message: "cccccccccccccccccccccccccccccccccccccccccccccccccccc"; is_self: true; timestamp: "2025-11-06T17:31:30Z"; displayDate: "06/11/2025"; displayTime: "17:31"}
+        ListElement{ messageType:"system";sender: "Admin"; message: "Amanda entou no canal"; is_self: false; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
+        ListElement{ messageType:"self";sender: "Você"; message: "d"; is_self: false; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
     }
 
 
-    // 1. O LAYOUT PRINCIPAL FOI CORRIGIDO (Melhoria)
-    // Este ColumnLayout agora organiza tudo, do topo à base.
+
     ColumnLayout {
         id: column
         anchors.fill: parent
-        anchors.margins: 10 // Margem que você tinha no 'rectangle' [cite: 35]
-        spacing: 6
+        anchors.margins: 10
+        spacing: 10
 
-        // Título do Canal (agora dinâmico)
+        // Título do Canal
         Label {
             id: channelTitle
             color: "white"
-            text: "Canal: #" + currentChannel // Usa a nova propriedade [cite: 47]
+            text: "Canal: #" + currentChannel
             font.bold: true
             font.pixelSize: 18
         }
@@ -41,10 +38,11 @@ Rectangle {
 
             Layout.fillHeight: true
             Layout.fillWidth: true
-            spacing: 10
-            clip: true
+            spacing: 14
+            clip: false//
             reuseItems: true
 
+            boundsBehavior: Flickable.StopAtBounds//pode merda
             ScrollBar.vertical: ScrollBar {
                 policy: ScrollBar.AsNeeded
             }
@@ -52,77 +50,31 @@ Rectangle {
             Component.onCompleted: chatListView.positionViewAtEnd()
 
 
-            delegate: Item {
-                height: messageContainer.height
-                width: chatListView.width
+            delegate: DelegateChooser {
+                // 1. O 'role' (propriedade) continua o mesmo
+                role: "messageType"
 
+                // 2. Delegate para "other"
+                DelegateChoice {
+                    roleValue: "other"
+                    MessageDelegateOther { }
+                }
 
-                Rectangle{
-                    id:messageContainer
-                    //width: chatListView.width * 0.7
-                    width: messageText.width + senderText.width //* 0.7
-                    //height: messageText.implicitHeight + 20
-                    height: columnChatArea.implicitHeight + 20
-                    //color: "#7E32BC"
-                    radius: 5
+                // 3. Delegate para "self"
+                DelegateChoice {
+                    roleValue: "self"
+                    MessageDelegateSelf { }
+                }
 
-                    //color: model.is_self ? "#00E6FF" : "#C800FF"
-
-
-                    color: model.is_self ? "#7E32BC" : "#62417D"
-                    //color:  "transparent"
-
-                    // Lógica de alinhamento testada
-                    anchors.right: model.is_self ? parent.right : undefined
-                    anchors.left: model.is_self ? undefined : parent.left
-
-
-                    //color: model.is_self ? "#dcf8c6" : "#ffffff"
-                    //border.color: "#e0e0e0"
-
-                    ColumnLayout{
-                        id: columnChatArea
-                        //width: parent.width
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        spacing: 4
-
-                        Text{
-                            id: senderText
-                            text: model.sender
-
-                            color: model.is_self ? "white" : "#00C8FF"
-                            font.bold: true
-                            Layout.fillWidth: true
-
-                            horizontalAlignment: model.is_self ? Text.AlignRight : Text.AlignLeft
-
-                            // anchors.leftMargin: 10
-                            // anchors.rightMargin: 10
-                            // anchors.topMargin: 10
-
-                        }
-
-                        Text {
-                            id: messageText
-                            text: model.message
-                            color: "white" // Cor do texto explícita
-                            wrapMode: Text.WordWrap
-                            Layout.fillWidth: true
-
-                            horizontalAlignment: model.is_self ? Text.AlignRight : Text.AlignLeft
-
-                            // anchors.left: parent.left
-                            // anchors.right: parent.right
-
-                            //anchors.leftMargin: 10
-                            // anchors.rightMargin: 10
-                            // anchors.bottomMargin: 10
-                        }
-                    }
+                //4. Delegate para "system"
+                DelegateChoice {
+                    roleValue: "system"
+                    SystemMessageDelegate { } // vou pensar
                 }
             }
         }
+
+
 
 
         InputBar {
@@ -130,7 +82,14 @@ Rectangle {
 
             Layout.fillWidth: true
             onSendMessage: (msg) => {
-                chatModel.append({sender:"Você",message:msg, is_self: true})
+                var now = new Date()
+                //var isoString = now.toISOString()
+                var date = now.toLocaleDateString(undefined,{year: 'numeric', month: '2-digit', day:'2-digit'})
+                var time = now.toLocaleTimeString(undefined,{hour: '2-digit', minute: '2-digit'})
+
+                chatModel.append({
+                    sender: "Você",message:msg, messageType: "self", timestamp: now.toISOString(), displayDate: date, displayTime: time
+                })
                 chatListView.positionViewAtEnd()
             }
         }
