@@ -44,7 +44,7 @@ Rectangle {
                 Layout.preferredHeight: messageField.implicitHeight//Math.min(implicitHeight, 120)
                 Layout.maximumHeight: 120
                 placeholderText: "Digite sua mensagem..."
-                wrapMode: TextEdit.WordWrap
+                wrapMode: TextEdit.Wrap
                 selectionColor: "#a8c43afc"
                 focus: true
                 activeFocusOnPress: true
