@@ -39,7 +39,7 @@ Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: true
             spacing: 8
-            clip: false//
+            clip: true//
             reuseItems: true
 
             boundsBehavior: Flickable.StopAtBounds//pode merda
