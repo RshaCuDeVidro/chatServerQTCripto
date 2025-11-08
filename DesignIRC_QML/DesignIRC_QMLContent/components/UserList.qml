@@ -9,6 +9,20 @@ Rectangle {
     //color: "#2e3035"
     Layout.preferredWidth: 240
 
+    // 1. Defina as cores como um objeto (mapa)
+    readonly property var statusColors: {
+        "online": "#47f063",
+        "away": "#faa61a",
+        "offline": "#747f8d"
+    }
+
+    // 2. Sua função fica muito mais simples
+    function getStatusColor(statusString) {
+        // Retorna a cor do mapa,
+        // ou a cor 'offline' como padrão se não encontrar
+        return statusColors[statusString] || statusColors.offline;
+    }
+
     // Rectangle {
     //     anchors.fill: parent
     //     anchors.margins: 10
@@ -16,41 +30,20 @@ Rectangle {
     ListModel{
         id: userListModel
 
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
-        ListElement{name: "User1"}
+        ListElement{name: "User1"; status: "online"}
+        ListElement{name: "User1"; status:"online"}
+        ListElement{name: "User1"; status:"online"}
+        ListElement{name: "User1"; status:"online"}
+        ListElement{name: "User1"; status: "offline"}
+        ListElement{name: "User1"; status: "offline"}
+        ListElement{name: "User1"; status:"online"}
+        ListElement{name: "User1"; status: "offline"}
+
+        ListElement{name: "User1"; status: "offline"}
+        ListElement{name: "User1"; status:"away"}
+        ListElement{name: "User1"; status:"away"}
+        ListElement{name: "User1"; status: "offline"}
+        ListElement{name: "User1"; status:"away"}
     }
 
 
@@ -156,6 +149,9 @@ Rectangle {
                     clip: true
                     anchors.left: parent.left
                     anchors.right: parent.right
+
+                    opacity: model.status === "offline" ? 0.6 : 1.0
+
                         //width: parent.width
                     background: Rectangle{
                         radius: 8
@@ -172,14 +168,21 @@ Rectangle {
                             width: 5
                             height: 5
                             radius: 11
-                            color: "#47f063"
+                            color: getStatusColor(model.status)
                             Layout.alignment: Qt.AlignVCenter
+
+                            SequentialAnimation on opacity {
+                                running: model.status === "online"
+                                loops: Animation.Infinite
+                                NumberAnimation { from: 1; to: 0.4; duration: 700; easing.type: Easing.InOutQuad }
+                                NumberAnimation { from: 0.4; to: 1; duration: 700; easing.type: Easing.InOutQuad }
+                            }
 
                         }
 
                         Label{
                             text: model.name
-                            color: checked ? "white" : "#b9bbbe"
+                            color: highlighted ? "white" : "#b9bbbe"
                             font.pixelSize: 12
                             elide: Text.ElideRight
                             //Layout.fillHeight: true
