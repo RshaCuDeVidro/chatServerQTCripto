@@ -4,12 +4,12 @@ import QtQuick.Layouts 6.8
 
 Item {
     width: chatListView.width
-    height: messageContainer.height + dateText.height + 4 + 14
+    height: messageContainer.height + dateText.height + 4 + 8
 
     Text {
         id: dateText
         text: model.displayDate
-        color: "#8b8da3"
+        color: "#97C2FF"//"#8b8da3"
         font.pixelSize: 10
 
 
@@ -55,7 +55,7 @@ Item {
                 // Horário (Segundo)
                 Text {
                     text: model.displayTime
-                    color: "#8b8da3"
+                    color: "white"//"#8b8da3"
                     font.pixelSize: 10
                     Layout.alignment: Qt.AlignBottom
                     Layout.leftMargin: 4

@@ -38,7 +38,7 @@ Rectangle {
 
             Layout.fillHeight: true
             Layout.fillWidth: true
-            spacing: 14
+            spacing: 8
             clip: false//
             reuseItems: true
 
