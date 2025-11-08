@@ -9,11 +9,11 @@ Rectangle {
 
     ListModel {
         id: chatModel
-        ListElement{ messageType:"self"; sender: "Você"; message: "aaaaaaaaaaaaaa"; is_self: true; timestamp: "2025-11-06T17:30:00Z"; displayDate: "06/11/2025"; displayTime: "17:30"}
-        ListElement{ messageType:"other";sender: "OutroUser"; message: "bbbbbbbbbbbbbbbbb"; is_self: false; timestamp: "2025-11-06T17:31:00Z";displayDate: "06/11/2025"; displayTime: "17:31"}
-        ListElement{ messageType:"other";sender: "Carlos"; message: "cccccccccccccccccccccccccccccccccccccccccccccccccccc"; is_self: true; timestamp: "2025-11-06T17:31:30Z"; displayDate: "06/11/2025"; displayTime: "17:31"}
-        ListElement{ messageType:"system";sender: "Admin"; message: "Amanda entou no canal"; is_self: false; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
-        ListElement{ messageType:"self";sender: "Você"; message: "d"; is_self: false; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
+        ListElement{ messageType:"self"; sender: "Você"; message: "aaaaaaaaaaaaaa"; timestamp: "2025-11-06T17:30:00Z"; displayDate: "06/11/2025"; displayTime: "17:30"}
+        ListElement{ messageType:"other";sender: "OutroUser"; message: "bbbbbbbbbbbbbbbbb"; timestamp: "2025-11-06T17:31:00Z";displayDate: "06/11/2025"; displayTime: "17:31"}
+        ListElement{ messageType:"other";sender: "Carlos"; message: "cccccccccccccccccccccccccccccccccccccccccccccccccccc";timestamp: "2025-11-06T17:31:30Z"; displayDate: "06/11/2025"; displayTime: "17:31"}
+        ListElement{ messageType:"system";sender: "Admin"; message: "Amanda entou no canal"; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
+        ListElement{ messageType:"self";sender: "Você"; message: "d"; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
     }
 
 
