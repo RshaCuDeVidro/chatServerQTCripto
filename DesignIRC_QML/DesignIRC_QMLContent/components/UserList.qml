@@ -129,8 +129,7 @@ Rectangle {
 
                 ScrollBar.vertical: ScrollBar{
                     policy: ScrollBar.AsNeeded
-                    active: true
-                    visible: true
+                    visible: userView.contentHeight > userView.height
                     width: 8
                     background: Rectangle{
                     color: "transparent"
