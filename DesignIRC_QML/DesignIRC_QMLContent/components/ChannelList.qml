@@ -23,23 +23,23 @@ Rectangle {
         ListElement { channelName: "aleatorio"; unreadCount: 0 }
         ListElement { channelName: "testes"; unreadCount: 0 }
         ListElement { channelName: "offtopic"; unreadCount: 0 }
-        // ListElement { channelName: "uiux"; unreadCount: 1 }
-        // ListElement { channelName: "backend"; unreadCount: 0 }
-        // ListElement { channelName: "geral"; unreadCount: 3 }
-        // ListElement { channelName: "dev"; unreadCount: 0 }
-        // ListElement { channelName: "design"; unreadCount: 10 }
-        // ListElement { channelName: "aleatorio"; unreadCount: 0 }
-        // ListElement { channelName: "testes"; unreadCount: 0 }
-        // ListElement { channelName: "Sal de aula"; unreadCount: 0 }
-        // ListElement { channelName: "design 2"; unreadCount: 1 }
-        // ListElement { channelName: "aleatorio"; unreadCount: 0 }
-        // ListElement { channelName: "testes"; unreadCount: 0 }
-        // ListElement { channelName: "dev"; unreadCount: 0 }
-        // ListElement { channelName: "design"; unreadCount: 1 }
-        // ListElement { channelName: "aleatorio"; unreadCount: 5 }
-        // ListElement { channelName: "testes"; unreadCount: 10 }
-        // ListElement { channelName: "design"; unreadCount: 1 }
-        // ListElement { channelName: "design"; unreadCount: 1 }
+        ListElement { channelName: "uiux"; unreadCount: 1 }
+        ListElement { channelName: "backend"; unreadCount: 0 }
+        ListElement { channelName: "geral"; unreadCount: 3 }
+        ListElement { channelName: "dev"; unreadCount: 0 }
+        ListElement { channelName: "design"; unreadCount: 10 }
+        ListElement { channelName: "aleatorio"; unreadCount: 0 }
+        ListElement { channelName: "testes"; unreadCount: 0 }
+        ListElement { channelName: "Sal de aula"; unreadCount: 0 }
+        ListElement { channelName: "design 2"; unreadCount: 1 }
+        ListElement { channelName: "aleatorio"; unreadCount: 0 }
+        ListElement { channelName: "testes"; unreadCount: 0 }
+        ListElement { channelName: "dev"; unreadCount: 0 }
+        ListElement { channelName: "design"; unreadCount: 1 }
+        ListElement { channelName: "aleatorio"; unreadCount: 5 }
+        ListElement { channelName: "testes"; unreadCount: 10 }
+        ListElement { channelName: "design"; unreadCount: 1 }
+        ListElement { channelName: "design"; unreadCount: 1 }
     }
 
     ColumnLayout {
@@ -131,8 +131,7 @@ Rectangle {
 
                 ScrollBar.vertical: ScrollBar {
                     policy: ScrollBar.AsNeeded
-                    //active: true
-                    //visible: true
+                    //visible: channelView.contentHeight > channelView.height
                     width: 8
                     background: Rectangle { color: "transparent" }
                     contentItem: Rectangle {

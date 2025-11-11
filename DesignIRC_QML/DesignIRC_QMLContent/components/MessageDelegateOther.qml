@@ -45,14 +45,15 @@ Item {
             RowLayout {
                 Layout.alignment: Qt.AlignLeft
 
-                // Remetente (Primeiro)
+                Layout.maximumWidth: messageContainer.maxWidth - 16
+
                 Text {
                     text: model.sender
                     color: "#00C8FF"
                     font.bold: true
                 }
 
-                // Horário (Segundo)
+
                 Text {
                     text: model.displayTime
                     color: "white"//"#8b8da3"

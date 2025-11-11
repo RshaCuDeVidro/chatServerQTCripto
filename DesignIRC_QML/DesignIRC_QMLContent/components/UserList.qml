@@ -38,6 +38,18 @@ Rectangle {
         ListElement{name: "User1"; status: "offline"}
         ListElement{name: "User1"; status:"online"}
         ListElement{name: "User1"; status: "offline"}
+        ListElement{name: "User1"; status: "online"}
+        ListElement{name: "User1"; status:"online"}
+        ListElement{name: "User1"; status:"offline"}
+        ListElement{name: "User1"; status:"online"}
+        ListElement{name: "User1"; status: "online"}
+        ListElement{name: "User1"; status:"offline"}
+        ListElement{name: "User1"; status:"online"}
+        ListElement{name: "User1"; status:"offline"}
+        ListElement{name: "User1"; status: "online"}
+        ListElement{name: "User1"; status:"online"}
+        ListElement{name: "User1"; status:"online"}
+        ListElement{name: "User1"; status:"online"}
 
         ListElement{name: "User1"; status: "offline"}
         ListElement{name: "User1"; status:"away"}
@@ -129,7 +141,7 @@ Rectangle {
 
                 ScrollBar.vertical: ScrollBar{
                     policy: ScrollBar.AsNeeded
-                    visible: userView.contentHeight > userView.height
+                    //visible: userView.contentHeight > userView.height
                     width: 8
                     background: Rectangle{
                     color: "transparent"
@@ -170,12 +182,12 @@ Rectangle {
                             color: getStatusColor(model.status)
                             Layout.alignment: Qt.AlignVCenter
 
-                            SequentialAnimation on opacity {
-                                running: model.status === "online"
-                                loops: Animation.Infinite
-                                NumberAnimation { from: 1; to: 0.4; duration: 700; easing.type: Easing.InOutQuad }
-                                NumberAnimation { from: 0.4; to: 1; duration: 700; easing.type: Easing.InOutQuad }
-                            }
+                            // SequentialAnimation on opacity {
+                            //     running: model.status === "online"
+                            //     loops: Animation.Infinite
+                            //     NumberAnimation { from: 1; to: 0.4; duration: 700; easing.type: Easing.InOutQuad }
+                            //     NumberAnimation { from: 0.4; to: 1; duration: 700; easing.type: Easing.InOutQuad }
+                            // }
 
                         }
 
