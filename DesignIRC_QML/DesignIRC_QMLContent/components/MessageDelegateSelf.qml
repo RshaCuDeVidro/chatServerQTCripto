@@ -45,6 +45,8 @@ Item {
             RowLayout {
                 Layout.alignment: Qt.AlignRight
 
+                Layout.maximumWidth: messageContainer.maxWidth - 16
+
 
                 Item {
                     Layout.fillWidth: true
