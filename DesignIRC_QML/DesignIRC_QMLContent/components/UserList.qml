@@ -155,11 +155,11 @@ Rectangle {
 
 
                 delegate: ItemDelegate {
-                    //width: ListView.view.width
+                    width: userView.width
                     height: 28
                     clip: true
-                    anchors.left: parent.left
-                    anchors.right: parent.right
+                    // anchors.left: parent.left
+                    // anchors.right: parent.right
 
                     opacity: model.status === "offline" ? 0.6 : 1.0
 

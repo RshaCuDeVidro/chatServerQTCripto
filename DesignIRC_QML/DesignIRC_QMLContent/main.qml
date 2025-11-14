@@ -17,32 +17,46 @@ ApplicationWindow {
         // anchors.margins: 7
         // radius: 15
 
-        RowLayout {
+        SplitView{//*/RowLayout {
             anchors.fill: parent
-            spacing: 0
+            //spacing: 0
 
-            // Lista de canais
+            id:mainSplitView
+
+
             ChannelList {
                 id:channelList
-                Layout.preferredWidth: 180
-                Layout.fillHeight: true
+                // Layout.preferredWidth: 180
+                // Layout.fillHeight: true
+
+                SplitView.preferredWidth: 180
+                SplitView.minimumWidth: 100
+                //SplitView.resizable: true
 
                 onChannelSelected: (channelName) =>{
                     chatArea.currentChannel = channelName
                 }
             }
 
-            // Área central do chat
+
             ChatArea {
                 id: chatArea
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+                // Layout.fillWidth: true
+                // Layout.fillHeight: true
+
+                SplitView.fillWidth: true
+                SplitView.minimumWidth: 300
+                //SplitView.resizable: true
             }
 
-            // Lista de usuários
+
             UserList {
                 Layout.preferredWidth: 180
                 Layout.fillHeight: true
+
+                SplitView.preferredWidth: 180
+                SplitView.minimumWidth: 100
+                //SplitView.resizable: true
             }
         }
     }

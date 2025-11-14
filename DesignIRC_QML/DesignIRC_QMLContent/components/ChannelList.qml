@@ -142,15 +142,18 @@ Rectangle {
                 }
 
                 delegate: ItemDelegate {
-                    //width: channelView.width
+                    width: channelView.width
                     height: 45
                     checkable: true
                     checked: ListView.isCurrentItem
                     clip: true
 
-                    anchors.margins: 4
-                    anchors.left: parent.left
-                    anchors.right: parent.right
+
+                    // anchors.leftMargin: 4
+                    // anchors.rightMargin: 4
+                    // //anchors.margins: 4
+                    // anchors.left: parent.left
+                    // anchors.right: parent.right
 
 
 
