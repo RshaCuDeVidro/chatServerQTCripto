@@ -54,7 +54,7 @@ ApplicationWindow {
                 Layout.preferredWidth: 180
                 Layout.fillHeight: true
 
-                SplitView.preferredWidth: 180
+                SplitView.preferredWidth: 150
                 SplitView.minimumWidth: 130
                 //SplitView.resizable: true
             }

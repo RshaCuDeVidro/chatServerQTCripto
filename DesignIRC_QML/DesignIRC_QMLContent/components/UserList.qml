@@ -27,36 +27,49 @@ Rectangle {
     //     anchors.fill: parent
     //     anchors.margins: 10
     //     color: "transparent"
-    ListModel{
-        id: userListModel
 
-        ListElement{name: "User1"; status: "online"}
-        ListElement{name: "User1"; status:"online"}
-        ListElement{name: "User1"; status:"online"}
-        ListElement{name: "User1"; status:"online"}
-        ListElement{name: "User1"; status: "offline"}
-        ListElement{name: "User1"; status: "offline"}
-        ListElement{name: "User1"; status:"online"}
-        ListElement{name: "User1"; status: "offline"}
-        ListElement{name: "User1"; status: "online"}
-        ListElement{name: "User1"; status:"online"}
-        ListElement{name: "User1"; status:"offline"}
-        ListElement{name: "User1"; status:"online"}
-        ListElement{name: "User1"; status: "online"}
-        ListElement{name: "User1"; status:"offline"}
-        ListElement{name: "User1"; status:"online"}
-        ListElement{name: "User1"; status:"offline"}
-        ListElement{name: "User1"; status: "online"}
-        ListElement{name: "User1"; status:"online"}
-        ListElement{name: "User1"; status:"online"}
-        ListElement{name: "User1"; status:"online"}
-
-        ListElement{name: "User1"; status: "offline"}
-        ListElement{name: "User1"; status:"away"}
-        ListElement{name: "User1"; status:"away"}
-        ListElement{name: "User1"; status: "offline"}
-        ListElement{name: "User1"; status:"away"}
+    function countUsersByStatus(status) {
+        let count = 0;
+        for (let i = 0; i < userListModel.count; i++) {
+            if (userListModel.get(i).status === status) {
+                count++;
+            }
+        }
+        return count;
     }
+
+
+
+    ListModel {
+        id: userListModel
+        // a gente vai ter que ordenar no python
+
+        ListElement{name: "Alice"; status: "online"}
+        ListElement{name: "Bob"; status:"online"}
+        ListElement{name: "Carlos"; status:"online"}
+        ListElement{name: "Gabriel"; status:"online"}
+        ListElement{name: "Igor"; status: "online"}
+        ListElement{name: "Laura"; status:"online"}
+
+
+        ListElement{name: "Diana"; status:"away"}
+        ListElement{name: "Julia"; status:"away"}
+        ListElement{name: "Otavio"; status:"away"}
+        ListElement{name: "Tiago"; status:"away"}
+        ListElement{name: "Wagner"; status:"away"}
+
+
+        ListElement{name: "Eduardo"; status: "offline"}
+        ListElement{name: "Fernanda"; status: "offline"}
+        ListElement{name: "Helena"; status: "offline"}
+        ListElement{name: "Kevin"; status:"offline"}
+        ListElement{name: "Nina"; status:"offline"}
+        ListElement{name: "Paula"; status:"offline"}
+        ListElement{name: "Vicente"; status: "offline"}
+        ListElement{name: "Yara"; status: "offline"}
+    }
+
+
 
 
     ColumnLayout {
@@ -153,6 +166,49 @@ Rectangle {
                     }
                 }
 
+                section.property: "status"
+                section.criteria: ViewSection.FullString
+                section.delegate: Rectangle {
+
+                    width: userView.width
+                    height: 30
+                    color: "transparent"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 8
+                        anchors.rightMargin: 8
+                        spacing: 6
+
+                        Rectangle {
+                            width: 8
+                            height: 8
+                            radius: 4
+                            color: getStatusColor(section)
+                        }
+
+                        Label {
+                            text: {
+                                if (section === "online") return "Online"
+                                if (section === "away") return "Ausente"
+                                if (section === "offline") return "Offline"
+                                return section
+                            }
+                            color: "#b9bbbe"
+                            font.pixelSize: 11
+                            font.bold: true
+                            Layout.fillWidth: true
+                        }
+
+                        Label {
+                            text: countUsersByStatus(section)
+                            color: "#72767d"
+                            font.pixelSize: 10
+                            font.bold: true
+                        }
+                    }
+                }
+
 
                 delegate: ItemDelegate {
                     width: userView.width
@@ -171,7 +227,14 @@ Rectangle {
 
                     contentItem: RowLayout {
                         spacing: 8
-                        anchors.verticalCenter: parent.verticalCenter                            // text: parent.text
+                        anchors.verticalCenter: parent.verticalCenter// text: parent.text
+
+                        anchors.left: parent.left
+                        anchors.leftMargin: 16
+                        anchors.right: parent.right
+                        anchors.rightMargin: 8
+                        // anchors.leftMargin: 8
+                        // anchors.left: parent.left
                         // font: parent.font
                         // verticalAlignment: Text.AlignVCenter
 
@@ -181,14 +244,6 @@ Rectangle {
                             radius: 11
                             color: getStatusColor(model.status)
                             Layout.alignment: Qt.AlignVCenter
-
-                            // SequentialAnimation on opacity {
-                            //     running: model.status === "online"
-                            //     loops: Animation.Infinite
-                            //     NumberAnimation { from: 1; to: 0.4; duration: 700; easing.type: Easing.InOutQuad }
-                            //     NumberAnimation { from: 0.4; to: 1; duration: 700; easing.type: Easing.InOutQuad }
-                            // }
-
                         }
 
                         Label{
@@ -196,8 +251,12 @@ Rectangle {
                             color: highlighted ? "white" : "#b9bbbe"
                             font.pixelSize: 12
                             elide: Text.ElideRight
+                            Layout.fillWidth: true
                             //Layout.fillHeight: true
                             Layout.alignment: Qt.AlignVCenter
+                            //Layout.alignment: Qt.AlignLeft
+
+
                         }
                     }
 
