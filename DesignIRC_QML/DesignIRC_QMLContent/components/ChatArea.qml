@@ -7,7 +7,8 @@ import "."
 Rectangle {
     id: root
     color: "#2A2B38" // 2C2C3F
-    property string currentChannel: "geral"//tenho que arrumar isso
+    property string currentChannel: ""
+    property bool hasChannelSelected: currentChannel !== ""
 
     ListModel {
         id: chatModel
@@ -67,10 +68,46 @@ Rectangle {
         Label {
             id: channelTitle
             color: "white"
-            text: "Canal: #" + currentChannel
+            text: root.hasChannelSelected
+                ? "Canal: #" + root.currentChannel
+                : "Selecione um canal"
             font.bold: true
             font.pixelSize: 18
+            opacity: root.hasChannelSelected ? 1.0 : 0.5
+
+            Behavior on opacity {
+                NumberAnimation { duration: 200 }
+            }
         }
+
+        // Placeholder quando nenhum canal selecionado
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: !root.hasChannelSelected
+
+            ColumnLayout {
+                anchors.centerIn: parent
+                spacing: 16
+
+                Label {
+                    text: "👈"
+                    font.pixelSize: 48
+                    color: "#888888"
+                    Layout.alignment: Qt.AlignHCenter
+                }
+
+                Label {
+                    text: "Selecione um canal\npara começar"
+                    font.pixelSize: 16
+                    color: "#888888"
+                    horizontalAlignment: Text.AlignHCenter
+                     Layout.alignment: Qt.AlignHCenter
+                }
+            }
+        }
+
+
         ListView {
             id: chatListView
             model: chatModel
@@ -117,9 +154,12 @@ Rectangle {
             id: inputBar
 
             Layout.fillWidth: true
+            visible: root.hasChannelSelected
+            enabled: root.hasChannelSelected
+
             onSendMessage: (msg) => {
                 var now = new Date()
-
+                // Apenas emite o evento - o próprio ChatArea escutará e adicionará
                 EventBus.emitMessageReceived(
                     root.currentChannel,
                     "Você",
