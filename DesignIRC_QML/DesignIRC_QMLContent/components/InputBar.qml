@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Effects
 import Qt5Compat.GraphicalEffects
+import "."
 
 Rectangle {
     id: inputBar
@@ -13,9 +14,6 @@ Rectangle {
     //color: "#606178"
     radius: 10
 
-
-
-
     signal sendMessage(string msg)
 
     Rectangle {
@@ -25,9 +23,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.top: parent.top
         height: rowLayout.height
-
         color: "transparent"
-
 
         RowLayout {
             id: rowLayout
@@ -40,7 +36,6 @@ Rectangle {
                 id: messageField
                 color:  "white"
                 Layout.fillWidth: true
-
                 Layout.preferredHeight: messageField.implicitHeight//Math.min(implicitHeight, 120)
                 Layout.maximumHeight: 120
                 placeholderText: "Digite sua mensagem..."
@@ -48,26 +43,19 @@ Rectangle {
                 selectionColor: "#a8c43afc"
                 focus: true
                 activeFocusOnPress: true
-                //placeholderTextColor: "#7561f2"
                 placeholderTextColor: "#ffffff"
 
                 background: Rectangle {
                     id: messageFieldBackground
                     color: "#2C2C3F"
-                    //color: "#3B3D4A"
-                    //radius: 4
                     radius: 8
                     border.color: "#C800FF"
-                    //border.width: 1.5
 
                     RectangularShadow {
                         id:messageNeon
                         anchors.fill: parent
                         z: -1
-
                         cached: true
-
-                        //color: "#c800ff"
                         color: "#C800FF"
                         radius: 8
                         blur: 14
@@ -88,7 +76,6 @@ Rectangle {
                             easing.bezierCurve: [0.42,0,0.58,1]
                             running: true
                             loops: -1
-
 
                             from: 7
                             to: 4
@@ -116,25 +103,8 @@ Rectangle {
                     }
 
                 }
-
-
-             //    Keys.onEnterPressed:{
-             //        if(messageField.text.length > 0){
-             //            sendMessage(messageField.text)
-             //            messageField.text = ""
-             //        }
-             //    }
-
-             //    Keys.onReturnPressed:{
-             //        if(messageField.text.length > 0){
-             //            sendMessage(messageField.text)
-             //            messageField.text = ""
-             //        }
-             //    }
             }
 
-//#5a8fd9
-//#2f02c4
             Button {
                 id: sendButton
                 visible: true
@@ -146,24 +116,19 @@ Rectangle {
                 Layout.preferredHeight: 40
                 background:Rectangle {
                     id: btReact
-                    //color: "#8A2BE2"
-                    //radius: 4
-                    color: "#2C2C3F"
-                    radius: 8
                     border.color: "#C800FF"
                     border.width: 1.5
 
+                    color: "#2C2C3F"
+                    radius: 8
 
                     RectangularShadow {
                         anchors.fill: parent
                         cached: true
                         z: -1
 
-
                         color: "#C800FF"
-                        // radius: 10
-                        // blur: 7
-                        // spread: 3
+
                         offset.x: 0
                         offset.y: 0
 
@@ -176,8 +141,6 @@ Rectangle {
                         PropertyAnimation on blur{
 
                             easing.bezierCurve: [0.42,0,0.58,1]
-
-
 
                             running: true
                             loops: -1
