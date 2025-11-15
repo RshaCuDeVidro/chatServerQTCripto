@@ -8,8 +8,10 @@
         <file>DesignIRC_QMLContent/components/ChannelList.qml</file>
         <file>DesignIRC_QMLContent/components/ChatArea.qml</file>
         <file>DesignIRC_QMLContent/components/InputBar.qml</file>
+        <file>DesignIRC_QMLContent/components/MessageDelegateBase.qml</file>
         <file>DesignIRC_QMLContent/components/MessageDelegateOther.qml</file>
         <file>DesignIRC_QMLContent/components/MessageDelegateSelf.qml</file>
+        <file>DesignIRC_QMLContent/components/StyledSidebar.qml</file>
         <file>DesignIRC_QMLContent/components/SystemMessageDelegate.qml</file>
         <file>DesignIRC_QMLContent/components/UserList.qml</file>
         <file>DesignIRC_QMLContent/main.qml</file>
