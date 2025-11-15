@@ -2,8 +2,10 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt.labs.qmlmodels
+import "."
 
 Rectangle {
+    id: root
     color: "#2A2B38" // 2C2C3F
     property string currentChannel: "geral"//tenho que arrumar isso
 
@@ -16,6 +18,43 @@ Rectangle {
         ListElement{ messageType:"self";sender: "Você"; message: "d"; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
     }
 
+    Component.onCompleted: {
+            // Quando um canal é selecionado
+            EventBus.channelSelected.connect(function(channelName) {
+                root.currentChannel = channelName
+                EventBus.log("ChatArea: Canal mudou para", channelName)
+
+                // Aqui você pode carregar histórico do backend
+                // EventBus.loadingStateChanged("chatHistory", true)
+                // backend.loadChannelHistory(channelName)
+            })
+
+            // Quando uma mensagem é recebida
+            EventBus.messageReceived.connect(function(channel, messageData) {
+                // Só adiciona se for do canal atual
+                if (channel === root.currentChannel) {
+                    chatModel.append(messageData)
+                    chatListView.positionViewAtEnd()
+                    EventBus.log("Mensagem recebida no canal", channel)
+                } else {
+                    // Incrementa contador de não lidas
+                    EventBus.log("Mensagem em outro canal:", channel)
+                    // Aqui você incrementaria o contador
+                }
+            })
+
+            // Quando histórico é carregado
+            EventBus.channelHistoryLoaded.connect(function(channel, messages) {
+                if (channel === root.currentChannel) {
+                    chatModel.clear()
+                    for (var i = 0; i < messages.length; i++) {
+                        chatModel.append(messages[i])
+                    }
+                    chatListView.positionViewAtEnd()
+                    EventBus.loadingStateChanged("chatHistory", false)
+                }
+            })
+        }
 
 
     ColumnLayout {
@@ -74,29 +113,30 @@ Rectangle {
             }
         }
 
-
-
-
         InputBar {
             id: inputBar
 
             Layout.fillWidth: true
             onSendMessage: (msg) => {
                 var now = new Date()
-                //var isoString = now.toISOString()
-                var date = now.toLocaleDateString(undefined,{year: 'numeric', month: '2-digit', day:'2-digit'})
-                var time = now.toLocaleTimeString(undefined,{hour: '2-digit', minute: '2-digit'})
 
-                chatModel.append({
-                    sender: "Você",message:msg, messageType: "self", timestamp: now.toISOString(), displayDate: date, displayTime: time
+                EventBus.emitMessageReceived(
+                    root.currentChannel,
+                    "Você",
+                    msg,
+                    "self",
+                    now
+                )
+
+                EventBus.log("Mensagem enviada:", {
+                    channel: root.currentChannel,
+                    message: msg
                 })
-                chatListView.positionViewAtEnd()
+
+                // Backend também será notificado via EventBus (no main.qml)
             }
         }
-
     }
-
-
 }
 
 
