@@ -37,7 +37,7 @@ StyledSidebar {
         for (var i = 0; i < userListModel.count; i++) {
             if (userListModel.get(i).name === userName) {
                 userListModel.setProperty(i, "status", newStatus)
-                EventBus.log("Status atualizado:", {
+                eventBus.log("Status atualizado:", {
                     user: userName,
                     status: newStatus
                 })
@@ -97,13 +97,13 @@ StyledSidebar {
     // Conecta aos eventos do EventBus
     Component.onCompleted: {
         // Quando status de usuário muda
-        EventBus.userStatusChanged.connect(function(userName, status) {
+        eventBus.userStatusChanged.connect(function(userName, status) {
             updateUserStatus(userName, status)
         })
 
         // Quando usuário entra em canal
-        EventBus.userJoinedChannel.connect(function(userName, channel) {
-            EventBus.log("Usuário entrou:", {
+        eventBus.userJoinedChannel.connect(function(userName, channel) {
+            eventBus.log("Usuário entrou:", {
                 user: userName,
                 channel: channel
             })
@@ -122,8 +122,8 @@ StyledSidebar {
         })
 
         // Quando usuário sai do canal
-        EventBus.userLeftChannel.connect(function(userName, channel) {
-            EventBus.log("Usuário saiu:", {
+        eventBus.userLeftChannel.connect(function(userName, channel) {
+            eventBus.log("Usuário saiu:", {
                 user: userName,
                 channel: channel
             })
@@ -131,7 +131,7 @@ StyledSidebar {
         })
 
         // Quando lista de usuários online é atualizada
-        EventBus.onlineUsersUpdated.connect(function(userList) {
+        eventBus.onlineUsersUpdated.connect(function(userList) {
             userListModel.clear()
             for (var i = 0; i < userList.length; i++) {
                  addUser(userList[i].name, userList[i].status)

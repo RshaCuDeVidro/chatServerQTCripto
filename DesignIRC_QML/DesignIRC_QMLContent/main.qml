@@ -12,68 +12,142 @@ ApplicationWindow {
     height: 600
     title: "IRC das Putas"
 
+    // ==================== EVENTBUS COMO PROPRIEDADE ====================
 
-     // ==================== Conexões com Backend ====================
+    property QtObject eventBus: QtObject {
+        id: _eventBus
+        objectName: "EventBus"
+
+        // Sinais de canal
+        signal channelSelected(string channelName)
+        signal messageReceived(string channel, var messageData)
+        signal channelHistoryLoaded(string channel, var messages)
+        signal unreadCountChanged(string channel, int count)
+
+        // Sinais de usuário
+        signal userStatusChanged(string userName, string status)
+        signal userJoinedChannel(string userName, string channel)
+        signal userLeftChannel(string userName, string channel)
+        signal onlineUsersUpdated(var userList)
+
+        // Sinais de notificação
+        signal notificationTriggered(string title, string message, string type)
+        signal userMentioned(string channel, string userName, string message)
+
+        // Sinais de conexão
+        signal connectionStatusChanged(bool connected)
+        signal connectionError(string errorMessage)
+
+        // Sinais de UI
+        signal loadingStateChanged(string component, bool isLoading)
+        signal showUserProfile(string userName)
+        signal showChannelSettings(string channelName)
+
+        // Helper para emitir mensagem
+        function emitMessageReceived(channel, sender, message, messageType, timestamp) {
+            var now = timestamp || new Date()
+            var messageData = {
+                sender: sender,
+                message: message,
+                messageType: messageType || "other",
+                timestamp: now.toISOString(),
+                displayDate: now.toLocaleDateString(undefined, {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                }),
+                displayTime: now.toLocaleTimeString(undefined, {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            }
+            messageReceived(channel, messageData)
+        }
+
+        // Helper para notificação
+        function notify(title, message, type) {
+            type = type || "info"
+            notificationTriggered(title, message, type)
+        }
+
+        // Log de debug
+        property bool debugMode: true
+
+        function log(message, data) {
+            if (debugMode) {
+                console.log("[EventBus]", message, data ? JSON.stringify(data) : "")
+            }
+        }
+    }
+
+    // ==================== Conexões com Backend ====================
+
     Component.onCompleted: {
-        // Conecta sinais do backend Python ao EventBus QML
+        // DEBUG: Verifica se eventBus existe
+        console.log("=== DEBUG EVENTBUS ===")
+        console.log("eventBus existe?", typeof eventBus)
+        console.log("eventBus.log existe?", typeof eventBus.log)
+        console.log("=====================")
+
+        // Conecta sinais do backend Python ao eventBus QML
         if (typeof backend !== 'undefined') {
             // Mensagem recebida do servidor
             backend.messageReceivedFromServer.connect(function(channel, messageData) {
-                EventBus.messageReceived(channel, messageData)
+                eventBus.messageReceived(channel, messageData)
             })
 
             // Status de usuário mudou
             backend.userStatusChangedFromServer.connect(function(userName, status) {
-                EventBus.userStatusChanged(userName, status)
+                eventBus.userStatusChanged(userName, status)
             })
 
             // Histórico de canal recebido
             backend.channelHistoryReceived.connect(function(channel, messages) {
-                EventBus.channelHistoryLoaded(channel, messages)
+                eventBus.channelHistoryLoaded(channel, messages)
             })
 
             // Status de conexão mudou (Backend → EventBus)
             backend.connectionStatusChanged.connect(function(connected) {
-                EventBus.connectionStatusChanged(connected)
+                eventBus.connectionStatusChanged(connected)
                 if (connected) {
-                    EventBus.notify("Conectado", "Conectado ao servidor IRC", "success")
+                    eventBus.notify("Conectado", "Conectado ao servidor IRC", "success")
                 } else {
-                    EventBus.notify("Desconectado", "Conexão perdida", "error")
+                    eventBus.notify("Desconectado", "Conexão perdida", "error")
                 }
             })
 
             // Erro ocorreu
             backend.errorOccurred.connect(function(errorMessage) {
-                EventBus.connectionError(errorMessage)
-                EventBus.notify("Erro", errorMessage, "error")
+                eventBus.connectionError(errorMessage)
+                eventBus.notify("Erro", errorMessage, "error")
             })
 
-            EventBus.log("Backend conectado ao EventBus")
+            eventBus.log("Backend conectado ao EventBus")
         } else {
             // Backend não disponível - modo de desenvolvimento
-            EventBus.log("Rodando sem backend (modo dev)")
+            eventBus.log("Rodando sem backend (modo dev)")
             connectionBar.isConnected = false
             connectionBar.statusMessage = "Modo Desenvolvimento"
         }
 
         // Conecta EventBus à UI
-        EventBus.connectionStatusChanged.connect(function(connected) {
+        eventBus.connectionStatusChanged.connect(function(connected) {
             connectionBar.isConnected = connected
             connectionBar.statusMessage = connected ? "Conectado" : "Desconectado"
         })
 
-        EventBus.connectionError.connect(function(errorMessage) {
+        eventBus.connectionError.connect(function(errorMessage) {
             connectionBar.statusMessage = "Erro: " + errorMessage
         })
 
         // Conecta EventBus para chamar backend quando necessário
-        EventBus.channelSelected.connect(function(channelName) {
+        eventBus.channelSelected.connect(function(channelName) {
             if (typeof backend !== 'undefined') {
                 backend.loadChannelHistory(channelName)
             }
         })
 
-        EventBus.messageReceived.connect(function(channel, messageData) {
+        eventBus.messageReceived.connect(function(channel, messageData) {
             // Se for mensagem do próprio usuário, envia para servidor
             if (messageData.messageType === "self" && typeof backend !== 'undefined') {
                 backend.sendMessage(channel, messageData.message)
@@ -160,9 +234,9 @@ ApplicationWindow {
         background: Rectangle {
             color: "#2C2C3F"
             radius: 8
-            border.color: notificationType === "error" ? "#f04747" :
-                          notificationType === "success" ? "#47f063" :
-                          notificationType === "warning" ? "#faa61a" : "#00C8FF"
+            border.color: notificationPopup.notificationType === "error" ? "#f04747" :
+                          notificationPopup.notificationType === "success" ? "#47f063" :
+                          notificationPopup.notificationType === "warning" ? "#faa61a" : "#00C8FF"
             border.width: 2
         }
 
@@ -204,7 +278,7 @@ ApplicationWindow {
 
     // Conecta notificações ao EventBus
     Connections {
-        target: EventBus
+        target: eventBus
 
         function onNotificationTriggered(title, message, type) {
             notificationPopup.notificationTitle = title

@@ -12,18 +12,18 @@ Rectangle {
 
     ListModel {
         id: chatModel
-        ListElement{ messageType:"self"; sender: "Você"; message: "aaaaaaaaaaaaaa"; timestamp: "2025-11-06T17:30:00Z"; displayDate: "06/11/2025"; displayTime: "17:30"}
-        ListElement{ messageType:"other";sender: "OutroUser"; message: "bbbbbbbbbbbbbbbbb"; timestamp: "2025-11-06T17:31:00Z";displayDate: "06/11/2025"; displayTime: "17:31"}
-        ListElement{ messageType:"other";sender: "Carlos"; message: "cccccccccccccccccccccccccccccccccccccccccccccccccccc";timestamp: "2025-11-06T17:31:30Z"; displayDate: "06/11/2025"; displayTime: "17:31"}
-        ListElement{ messageType:"system";sender: "Admin"; message: "Amanda entou no canal"; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
-        ListElement{ messageType:"self";sender: "Você"; message: "d"; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
+        // ListElement{ messageType:"self"; sender: "Você"; message: "aaaaaaaaaaaaaa"; timestamp: "2025-11-06T17:30:00Z"; displayDate: "06/11/2025"; displayTime: "17:30"}
+        // ListElement{ messageType:"other";sender: "OutroUser"; message: "bbbbbbbbbbbbbbbbb"; timestamp: "2025-11-06T17:31:00Z";displayDate: "06/11/2025"; displayTime: "17:31"}
+        // ListElement{ messageType:"other";sender: "Carlos"; message: "cccccccccccccccccccccccccccccccccccccccccccccccccccc";timestamp: "2025-11-06T17:31:30Z"; displayDate: "06/11/2025"; displayTime: "17:31"}
+        // ListElement{ messageType:"system";sender: "Admin"; message: "Amanda entou no canal"; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
+        // ListElement{ messageType:"self";sender: "Você"; message: "d"; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
     }
 
     Component.onCompleted: {
             // Quando um canal é selecionado
-            EventBus.channelSelected.connect(function(channelName) {
+            eventBus.channelSelected.connect(function(channelName) {
                 root.currentChannel = channelName
-                EventBus.log("ChatArea: Canal mudou para", channelName)
+                eventBus.log("ChatArea: Canal mudou para", channelName)
 
                 // Aqui você pode carregar histórico do backend
                 // EventBus.loadingStateChanged("chatHistory", true)
@@ -31,28 +31,28 @@ Rectangle {
             })
 
             // Quando uma mensagem é recebida
-            EventBus.messageReceived.connect(function(channel, messageData) {
+            eventBus.messageReceived.connect(function(channel, messageData) {
                 // Só adiciona se for do canal atual
                 if (channel === root.currentChannel) {
                     chatModel.append(messageData)
                     chatListView.positionViewAtEnd()
-                    EventBus.log("Mensagem recebida no canal", channel)
+                    eventBus.log("Mensagem recebida no canal", channel)
                 } else {
                     // Incrementa contador de não lidas
-                    EventBus.log("Mensagem em outro canal:", channel)
+                    eventBus.log("Mensagem em outro canal:", channel)
                     // Aqui você incrementaria o contador
                 }
             })
 
             // Quando histórico é carregado
-            EventBus.channelHistoryLoaded.connect(function(channel, messages) {
+            eventBus.channelHistoryLoaded.connect(function(channel, messages) {
                 if (channel === root.currentChannel) {
                     chatModel.clear()
                     for (var i = 0; i < messages.length; i++) {
                         chatModel.append(messages[i])
                     }
                     chatListView.positionViewAtEnd()
-                    EventBus.loadingStateChanged("chatHistory", false)
+                    eventBus.loadingStateChanged("chatHistory", false)
                 }
             })
         }
@@ -160,7 +160,7 @@ Rectangle {
             onSendMessage: (msg) => {
                 var now = new Date()
                 // Apenas emite o evento - o próprio ChatArea escutará e adicionará
-                EventBus.emitMessageReceived(
+                eventBus.emitMessageReceived(
                     root.currentChannel,
                     "Você",
                     msg,
@@ -168,7 +168,7 @@ Rectangle {
                     now
                 )
 
-                EventBus.log("Mensagem enviada:", {
+                eventBus.log("Mensagem enviada:", {
                     channel: root.currentChannel,
                     message: msg
                 })

@@ -1,10 +1,10 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "."
 
 StyledSidebar {
     id: root
-
     title: "Canais"
 
     signal channelSelected(string channelName)
@@ -29,6 +29,22 @@ StyledSidebar {
                 ListElement { channelName: "games"; unreadCount: 3 }
     }
 
+    Component.onCompleted: {
+            eventBus.unreadCountChanged.connect(function(channel, count) {
+                root.updateUnreadCount(channel, count)
+            })
+        }
+
+    // Função para encontrar e atualizar canal
+    function updateUnreadCount(channelName, count) {
+        for (var i = 0; i < channelListModel.count; i++) {
+            if (channelListModel.get(i).channelName === channelName) {
+                channelListModel.setProperty(i, "unreadCount", count)
+                break
+            }
+        }
+    }
+
     ListView {
         id: channelView
         anchors.fill: parent
@@ -40,7 +56,6 @@ StyledSidebar {
 
         ScrollBar.vertical: ScrollBar {
             policy: ScrollBar.AsNeeded
-            //visible: channelView.contentHeight > channelView.height
             width: 8
             background: Rectangle {
                 color: "transparent"
@@ -53,6 +68,7 @@ StyledSidebar {
         }
 
         delegate: ItemDelegate {
+            id: channelDelegate
             width: channelView.width
             height: 45
             checkable: true
@@ -66,11 +82,10 @@ StyledSidebar {
 
                     anchors.fill: parent
                     color: "#40444b"
-                    opacity: hovered && !checked ? 0.5 : 0.0
+                    opacity: channelDelegate.hovered && !channelDelegate.checked ? 0.5 : 0.0
+
                     Behavior on opacity {
-                        NumberAnimation {
-                            duration: 100
-                        }
+                        NumberAnimation {duration: 100}
                     }
                 }
             }
@@ -79,14 +94,22 @@ StyledSidebar {
                 spacing: 10
                 anchors.verticalCenter: parent.verticalCenter
 
+                anchors.left: parent.left
+                anchors.leftMargin: 8
+                anchors.right: parent.right
+                anchors.rightMargin: 8
+
                 //Layout.fillWidth: true
                 Label {
                     text: "#" + model.channelName
-                    color: checked ? "white" : "#8B8DA3"
+                    color: channelDelegate.checked ? "white" : "#8B8DA3"
                     font.pixelSize: 16
                     font.bold: true
                     elide: Text.ElideRight
                     Layout.fillWidth: true
+                    Behavior on color {
+                        ColorAnimation { duration: 100 }
+                    }
                 }
 
                 //  mensagens não lidas
@@ -100,9 +123,9 @@ StyledSidebar {
 
                     Label {
                         anchors.centerIn: parent
-                        text: model.unreadCount
+                        text: model.unreadCount > 99 ? "99+" : model.unreadCount
                         color: "white"
-                        font.pixelSize: 12
+                        font.pixelSize: model.unreadCount > 99 ? 9 : 12
                         font.bold: true
                     }
                 }
@@ -110,7 +133,12 @@ StyledSidebar {
 
             onClicked: {
                 channelView.currentIndex = index
-                channelList.channelSelected(model.channelName)
+                // Emite via EventBus
+                eventBus.channelSelected(model.channelName)
+                eventBus.log("Canal selecionado:", model.channelName)
+
+                // Também emite o signal local (compatibilidade)
+                root.channelSelected(model.channelName)
             }
         }
     }
