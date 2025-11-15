@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "."
 
 StyledSidebar {
     id: root
@@ -31,6 +32,38 @@ StyledSidebar {
         return count
     }
 
+    // Função para atualizar status de um usuário
+    function updateUserStatus(userName, newStatus) {
+        for (var i = 0; i < userListModel.count; i++) {
+            if (userListModel.get(i).name === userName) {
+                userListModel.setProperty(i, "status", newStatus)
+                EventBus.log("Status atualizado:", {
+                    user: userName,
+                    status: newStatus
+                })
+                break
+            }
+        }
+    }
+
+    // Função para adicionar novo usuário
+    function addUser(userName, status) {
+        userListModel.append({
+            name: userName,
+            status: status || "online"
+        })
+    }
+
+    // Função para remover usuário
+    function removeUser(userName) {
+        for (var i = 0; i < userListModel.count; i++) {
+            if (userListModel.get(i).name === userName) {
+                userListModel.remove(i)
+                break
+            }
+        }
+    }
+
     ListModel {
         id: userListModel
 
@@ -59,6 +92,51 @@ StyledSidebar {
         ListElement { name: "Paula"; status: "offline" }
         ListElement { name: "Vicente"; status: "offline" }
         ListElement { name: "Yara"; status: "offline" }
+    }
+
+    // Conecta aos eventos do EventBus
+    Component.onCompleted: {
+        // Quando status de usuário muda
+        EventBus.userStatusChanged.connect(function(userName, status) {
+            updateUserStatus(userName, status)
+        })
+
+        // Quando usuário entra em canal
+        EventBus.userJoinedChannel.connect(function(userName, channel) {
+            EventBus.log("Usuário entrou:", {
+                user: userName,
+                channel: channel
+            })
+            // Adiciona usuário se não existir
+            var exists = false
+            for (var i = 0; i < userListModel.count; i++) {
+                if (userListModel.get(i).name === userName) {
+                    exists = true
+                    updateUserStatus(userName, "online")
+                    break
+                }
+            }
+            if (!exists) {
+                addUser(userName, "online")
+            }
+        })
+
+        // Quando usuário sai do canal
+        EventBus.userLeftChannel.connect(function(userName, channel) {
+            EventBus.log("Usuário saiu:", {
+                user: userName,
+                channel: channel
+            })
+            updateUserStatus(userName, "offline")
+        })
+
+        // Quando lista de usuários online é atualizada
+        EventBus.onlineUsersUpdated.connect(function(userList) {
+            userListModel.clear()
+            for (var i = 0; i < userList.length; i++) {
+                 addUser(userList[i].name, userList[i].status)
+            }
+        })
     }
 
     ListView {
@@ -107,15 +185,6 @@ StyledSidebar {
                 }
 
                 Label {
-                    // text: {
-                    //     if (section === "online")
-                    //         return "Online"
-                    //     if (section === "away")
-                    //         return "Ausente"
-                    //     if (section === "offline")
-                    //         return "Offline"
-                    //     return section
-                    // }
                     text: statusInfo[section] ? statusInfo[section].label : section
                     color: "#b9bbbe"
                     font.pixelSize: 11
@@ -136,21 +205,17 @@ StyledSidebar {
             width: userView.width
             height: 28
             clip: true
-
-            // anchors.left: parent.left
-            // anchors.right: parent.right
             opacity: model.status === "offline" ? 0.6 : 1.0
 
-            //width: parent.width
             background: Rectangle {
                 radius: 8
-                color: highlighted ? "#40444b" : "transparent"
+                color: "transparent"
             }
 
             contentItem: RowLayout {
                 spacing: 8
-                anchors.verticalCenter: parent.verticalCenter // text: parent.text
 
+                anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
                 anchors.leftMargin: 16
                 anchors.right: parent.right
@@ -167,13 +232,11 @@ StyledSidebar {
 
                 Label {
                     text: model.name
-                    color: highlighted ? "white" : "#b9bbbe"
+                    color: "#b9bbbe"
                     font.pixelSize: 12
                     elide: Text.ElideRight
                     Layout.fillWidth: true
-                    //Layout.fillHeight: true
                     Layout.alignment: Qt.AlignVCenter
-                    //Layout.alignment: Qt.AlignLeft
                 }
             }
         }
