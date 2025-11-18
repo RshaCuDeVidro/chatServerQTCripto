@@ -10,40 +10,34 @@ ApplicationWindow {
     minimumHeight: 600
     width: 1000
     height: 600
-    title: "IRC das Putas"
+    title: "IRC Chat"
 
-    // ==================== EVENTBUS COMO PROPRIEDADE ====================
+    // ==================== EVENTBUS (SINGLETON) ====================
 
     property QtObject eventBus: QtObject {
         id: _eventBus
         objectName: "EventBus"
 
-        // Sinais de canal
-        signal channelSelected(string channelName)
+        // ===== EVENTOS DE BACKEND (Backend → Frontend) =====
         signal messageReceived(string channel, var messageData)
         signal channelHistoryLoaded(string channel, var messages)
-        signal unreadCountChanged(string channel, int count)
-
-        // Sinais de usuário
         signal userStatusChanged(string userName, string status)
         signal userJoinedChannel(string userName, string channel)
         signal userLeftChannel(string userName, string channel)
         signal onlineUsersUpdated(var userList)
-
-        // Sinais de notificação
-        signal notificationTriggered(string title, string message, string type)
-        signal userMentioned(string channel, string userName, string message)
-
-        // Sinais de conexão
         signal connectionStatusChanged(bool connected)
         signal connectionError(string errorMessage)
 
-        // Sinais de UI
+        // ===== EVENTOS DE UI (Frontend → Frontend) =====
+        signal channelSelected(string channelName)
+        // signal unreadCountChanged(string channel, int count)
+        // signal notificationTriggered(string title, string message, string type)
+        // signal userMentioned(string channel, string userName, string message)
         signal loadingStateChanged(string component, bool isLoading)
         signal showUserProfile(string userName)
         signal showChannelSettings(string channelName)
 
-        // Helper para emitir mensagem
+        // ===== HELPERS =====
         function emitMessageReceived(channel, sender, message, messageType, timestamp) {
             var now = timestamp || new Date()
             var messageData = {
@@ -64,15 +58,8 @@ ApplicationWindow {
             messageReceived(channel, messageData)
         }
 
-        // Helper para notificação
-        function notify(title, message, type) {
-            type = type || "info"
-            notificationTriggered(title, message, type)
-        }
-
-        // Log de debug
+        // Debug
         property bool debugMode: true
-
         function log(message, data) {
             if (debugMode) {
                 console.log("[EventBus]", message, data ? JSON.stringify(data) : "")
@@ -80,254 +67,526 @@ ApplicationWindow {
         }
     }
 
-    // ==================== Conexões com Backend ====================
+    // ==================== ORQUESTRADOR (MEDIATOR) ====================
 
-    Component.onCompleted: {
-        // DEBUG: Verifica se eventBus existe
-        console.log("=== DEBUG EVENTBUS ===")
-        console.log("eventBus existe?", typeof eventBus)
-        console.log("eventBus.log existe?", typeof eventBus.log)
-        console.log("=====================")
+    QtObject {
+        id: appCoordinator
 
-        // Conecta sinais do backend Python ao eventBus QML
-        if (typeof backend !== 'undefined') {
-            // Mensagem recebida do servidor
-            backend.messageReceivedFromServer.connect(function(channel, messageData) {
-                eventBus.messageReceived(channel, messageData)
-            })
+        // Estado da aplicação
+        property bool isConnected: false
+        property bool isLoggedIn: false
+        property string currentUser: ""
+        property string currentChannel: "geral"
 
-            // Status de usuário mudou
-            backend.userStatusChangedFromServer.connect(function(userName, status) {
-                eventBus.userStatusChanged(userName, status)
-            })
-
-            // Histórico de canal recebido
-            backend.channelHistoryReceived.connect(function(channel, messages) {
-                eventBus.channelHistoryLoaded(channel, messages)
-            })
-
-            // Status de conexão mudou (Backend → EventBus)
-            backend.connectionStatusChanged.connect(function(connected) {
-                eventBus.connectionStatusChanged(connected)
-                if (connected) {
-                    eventBus.notify("Conectado", "Conectado ao servidor IRC", "success")
-                } else {
-                    eventBus.notify("Desconectado", "Conexão perdida", "error")
-                }
-            })
-
-            // Erro ocorreu
-            backend.errorOccurred.connect(function(errorMessage) {
-                eventBus.connectionError(errorMessage)
-                eventBus.notify("Erro", errorMessage, "error")
-            })
-
-            eventBus.log("Backend conectado ao EventBus")
-        } else {
-            // Backend não disponível - modo de desenvolvimento
-            eventBus.log("Rodando sem backend (modo dev)")
-            connectionBar.isConnected = false
-            connectionBar.statusMessage = "Modo Desenvolvimento"
+        // Fluxo: Conexão estabelecida
+        function onConnected() {
+            isConnected = true
+            eventBus.log("Orquestrador: Conectado")
+            // eventBus.notify("Conectado", "Servidor alcançado", "success")
         }
 
-        // Conecta EventBus à UI
-        eventBus.connectionStatusChanged.connect(function(connected) {
-            connectionBar.isConnected = connected
-            connectionBar.statusMessage = connected ? "Conectado" : "Desconectado"
-        })
+        // Fluxo: Login bem-sucedida
+        function onLoggedIn(userData) {
+            isLoggedIn = true
+            currentUser = userData.username
 
-        eventBus.connectionError.connect(function(errorMessage) {
-            connectionBar.statusMessage = "Erro: " + errorMessage
-        })
+            eventBus.log("Orquestrador: Logado como", currentUser)
 
-        // Conecta EventBus para chamar backend quando necessário
-        eventBus.channelSelected.connect(function(channelName) {
+            // 1. Requisita lista de usuários online
             if (typeof backend !== 'undefined') {
-                backend.loadChannelHistory(channelName)
+                backend.requestOnlineUsers()
             }
+
+            // 2. Entra no canal padrão
+            Qt.callLater(function() {
+                switchChannel(currentChannel)
+            })
+        }
+
+        // Fluxo: Desconexão
+        function onDisconnected() {
+            //var wasAuthenticated = isAuthenticated
+            var wasLoggedIn = isLoggedIn
+
+            isConnected = false
+            isLoggedIn = false
+            currentUser = ""
+
+            eventBus.log("Orquestrador: Desconectado")
+
+            // if (wasAuthenticated) {
+            //     eventBus.notify("Desconectado", "Conexão perdida", "error")
+            // }
+        }
+
+        // Fluxo: Troca de canal
+        function switchChannel(channelName) {
+            if (!isLoggedIn) {
+                //eventBus.notify("Erro", "Você precisa estar autenticado", "error")
+                return
+            }
+
+            eventBus.log("Orquestrador: Trocando para", channelName)
+
+            var oldChannel = currentChannel
+            currentChannel = channelName
+
+            // Backend sai do canal anterior e entra no novo
+            if (typeof backend !== 'undefined') {
+                backend.joinChannel(channelName)
+            }
+
+            // EventBus notifica componentes
+            //eventBus.channelSelected(channelName)
+        }
+
+        // Fluxo: Enviar mensagem
+        function sendMessage(channel, message) {
+            if (!isLoggedIn) {
+                //eventBus.notify("Erro", "Você precisa estar autenticado", "error")
+                return
+            }
+
+            // Backend + UI local (otimista)
+            if (typeof backend !== 'undefined') {
+                backend.sendMessage(channel, message)
+
+                //Adiciona localmente
+                eventBus.emitMessageReceived(
+                    channel,
+                    currentUser,
+                    message,
+                    "self",
+                    new Date()
+                )
+            } else {
+                // Modo offline
+                eventBus.emitMessageReceived(
+                    channel,
+                    "Você",
+                    message,
+                    "self",
+                    new Date()
+                )
+            }
+        }
+    }
+
+    // ==================== CONEXÕES BACKEND → ORQUESTRADOR ==================== 
+    Component.onCompleted: {
+        console.log("=== INICIANDO APLICAÇÃO ===")
+
+        if (typeof backend !== 'undefined') {
+            console.log("✅ Backend disponível")
+
+            // Backend → Orquestrador
+            backend.connectionStatusChanged.connect(function(connected) {
+                if (connected) {
+                    appCoordinator.onConnected()
+                } else {
+                    appCoordinator.onDisconnected()
+                }
+                eventBus.connectionStatusChanged(connected)
+            })
+
+            backend.loginSuccess.connect(function(userData) {
+                appCoordinator.onLoggedIn(userData)
+            })
+
+            backend.loginFailed.connect(function(errorMessage) {
+                eventBus.notify("Erro de Autenticação", errorMessage, "error")
+            })
+
+            // Backend → EventBus (direto)
+            backend.messageReceived.connect(eventBus.messageReceived)
+            backend.channelHistoryReceived.connect(eventBus.channelHistoryLoaded)
+            backend.userStatusChanged.connect(eventBus.userStatusChanged)
+            backend.userJoinedChannel.connect(eventBus.userJoinedChannel)
+            backend.userLeftChannel.connect(eventBus.userLeftChannel)
+            backend.usersListUpdated.connect(eventBus.onlineUsersUpdated)
+            backend.errorOccurred.connect(function(errorMessage) {
+                eventBus.connectionError(errorMessage)
+            })
+
+            console.log("✅ Backend conectado")
+
+        } else {
+            console.warn("⚠️ Modo desenvolvimento (sem backend)")
+            // Em modo dev, mostra a interface direto
+            appCoordinator.isLoggedIn = true
+            appCoordinator.currentUser = "DevUser"
+        }
+
+        // ===== CONEXÕES EVENTBUS → ORQUESTRADOR =====
+
+        eventBus.channelSelected.connect(function(channelName) {
+            appCoordinator.switchChannel(channelName)
         })
 
         eventBus.messageReceived.connect(function(channel, messageData) {
-            // Se for mensagem do próprio usuário, envia para servidor
-            if (messageData.messageType === "self" && typeof backend !== 'undefined') {
-                backend.sendMessage(channel, messageData.message)
+            if (messageData.messageType === "self") {
+                // Já foi processado
             }
         })
+
+        console.log("=== APLICAÇÃO INICIADA ===")
     }
 
-    // ==================== UI ====================
+    // ================== STACK VIEW (Login/Chat) ================
 
-    Rectangle {
+    StackView {
+        id: mainStack
         anchors.fill: parent
-        color: "#1E1E2E"
+        initialItem: loginScreen
 
-        // Barra de status de conexão
+        // Mostra chat quando autenticado
+        Connections {
+            target: appCoordinator
+            function onIsLoggedInChanged() {
+                if (appCoordinator.isLoggedIn) {
+                    mainStack.replace(chatScreen)
+                } else {
+                    mainStack.replace(loginScreen)
+                }
+            }
+        }
+    }
+
+    // ================== TELA DE LOGIN ================
+
+    Component {
+        id: loginScreen
+
         Rectangle {
-            id: connectionBar
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: 30
-            visible: true
+            color: "#1E1E2E"
 
-            // Estado interno da barra
-            property bool isConnected: false
-            property string statusMessage: "Desconectado"
-
-            color: isConnected ? "#47f063" : "#f04747"
-
-            Label {
+            ColumnLayout {
                 anchors.centerIn: parent
-                text: connectionBar.isConnected
-                      ? "🟢 " + connectionBar.statusMessage
-                      : "🔴 " + connectionBar.statusMessage
-                color: "white"
-                font.bold: true
+                width: 400
+                spacing: 20
+
+                // Logo/Título
+                Label {
+                    text: "IRC Chat"
+                    font.pixelSize: 32
+                    font.bold: true
+                    color: "#C800FF"
+                    Layout.alignment: Qt.AlignHCenter
+                }
+
+                // Status de conexão
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 40
+                    radius: 8
+                    color: appCoordinator.isConnected ? "#47f06322" : "#f0474722"
+                    border.color: appCoordinator.isConnected ? "#47f063" : "#f04747"
+                    border.width: 2
+
+                    Label {
+                        anchors.centerIn: parent
+                        text: appCoordinator.isConnected
+                              ? "🟢 Conectado ao servidor"
+                              : "🔴 Conectando..."
+                        color: "white"
+                        font.pixelSize: 14
+                    }
+
+                    // Indicador de loading
+                    BusyIndicator {
+                        anchors.right: parent.right
+                        anchors.rightMargin: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 24
+                        height: 24
+                        running: !appCoordinator.isConnected
+                    }
+                }
+
+                // Card de login
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: loginForm.implicitHeight + 40
+                    color: "#2C2C3F"
+                    radius: 12
+                    border.color: "#C800FF"
+                    border.width: 2
+                    ColumnLayout {
+                        id: loginForm
+                        anchors.fill: parent
+                        anchors.margins: 20
+                        spacing: 15
+
+                        // Mensagem de erro
+                        Rectangle {
+                            id: errorBox
+                            Layout.fillWidth: true
+                            height: errorLabel.implicitHeight + 20
+                            color: "#f0474722"
+                            border.color: "#f04747"
+                            border.width: 1
+                            radius: 6
+                            visible: false
+
+                            Label {
+                                id: errorLabel
+                                anchors.fill: parent
+                                anchors.margins: 10
+                                text: ""
+                                color: "#f04747"
+                                wrapMode: Text.Wrap
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+                        }
+
+                        // Username
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 5
+
+                            Label {
+                                text: "Username"
+                                color: "#b9bbbe"
+                                font.pixelSize: 12
+                            }
+
+                            TextField {
+                                id: usernameField
+                                Layout.fillWidth: true
+                                placeholderText: "Digite seu username"
+                                color: "white"
+
+                                background: Rectangle {
+                                    color: "#40444b"
+                                    radius: 6
+                                    border.color: usernameField.activeFocus ? "#C800FF" : "#36393f"
+                                    border.width: 2
+                                }
+
+                                Keys.onReturnPressed: passwordField.forceActiveFocus()
+
+
+                            }
+                        }
+
+
+
+                        // Password
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 5
+
+                            Label {
+                                text: "Senha"
+                                color: "#b9bbbe"
+                                font.pixelSize: 12
+                            }
+
+                            TextField {
+                                id: passwordField
+                                Layout.fillWidth: true
+                                placeholderText: "Digite sua senha"
+                                echoMode: TextInput.Password
+                                color: "white"
+
+                                background: Rectangle {
+                                    color: "#40444b"
+                                    radius: 6
+                                    border.color: passwordField.activeFocus ? "#C800FF" : "#36393f"
+                                    border.width: 2
+                                }
+
+                                Keys.onReturnPressed: loginButton.clicked()
+                            }
+                        }
+
+                        // Checkbox de registro
+                        CheckBox {
+                            id: registerCheckBox
+                            text: "Criar nova conta"
+                            Layout.alignment: Qt.AlignHCenter
+
+                            contentItem: Label {
+                                text: registerCheckBox.text
+                                color: "#b9bbbe"
+                                leftPadding: registerCheckBox.indicator.width + 8
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
+                            onCheckedChanged: {
+                                errorBox.visible = false
+                            }
+                        }
+
+                        // Botão de login/registro
+                        Button {
+                            id: loginButton
+                            Layout.fillWidth: true
+                            height: 45
+                            text: registerCheckBox.checked ? "Registrar" : "Entrar"
+                            enabled: appCoordinator.isConnected &&
+                                     usernameField.text.length >= 3 &&
+                                     passwordField.text.length >= 6
+
+                            background: Rectangle {
+                                color: loginButton.enabled
+                                       ? (loginButton.hovered ? "#a800d6" : "#C800FF")
+                                       : "#40444b"
+                                radius: 6
+
+                                Behavior on color {
+                                    ColorAnimation { duration: 150 }
+                                }
+                            }
+
+                            contentItem: Label {
+                                text: loginButton.text
+                                color: loginButton.enabled ? "white" : "#72767d"
+                                font.pixelSize: 16
+                                font.bold: true
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
+                            onClicked: {
+                                errorBox.visible = false
+
+                                if (typeof backend === 'undefined') {
+                                    errorLabel.text = "Backend não disponível"
+                                    errorBox.visible = true
+                                    return
+                                }
+
+                                if (usernameField.text.length < 3) {
+                                    errorLabel.text = "Username deve ter no mínimo 3 caracteres"
+                                    errorBox.visible = true
+                                    return
+                                }
+
+                                if (passwordField.text.length < 6) {
+                                    errorLabel.text = "Senha deve ter no mínimo 6 caracteres"
+                                    errorBox.visible = true
+                                    return
+                                }
+
+                                if (registerCheckBox.checked) {
+                                    // Registro
+                                    backend.register(
+                                        usernameField.text,
+                                        passwordField.text,
+                                    )
+                                } else {
+                                    // Login
+                                    backend.login(
+                                        usernameField.text,
+                                        passwordField.text
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // // Versão/Info
+                // Label {
+                //     text: "v1.0.0 - IRC Chat Client"
+                //     color: "#72767d"
+                //     font.pixelSize: 10
+                //     Layout.alignment: Qt.AlignHCenter
+                // }
             }
 
-            Behavior on color {
-                ColorAnimation { duration: 300 }
-            }
-        }
-
-        SplitView {
-            id: mainSplitView
-            anchors.top: connectionBar.visible ? connectionBar.bottom : parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-
-            // Lista de Canais
-            ChannelList {
-                id: channelList
-                SplitView.preferredWidth: 180
-                SplitView.minimumWidth: 100
-            }
-
-            // Área de Chat
-            ChatArea {
-                id: chatArea
-                SplitView.fillWidth: true
-                SplitView.minimumWidth: 300
-            }
-
-            // Lista de Usuários
-            UserList {
-                id: userList
-                SplitView.preferredWidth: 150
-                SplitView.minimumWidth: 130
+            // Conexão para mostrar erros
+            Connections {
+                target: eventBus
+                function onConnectionError(errorMessage) {
+                    errorLabel.text = errorMessage
+                    errorBox.visible = true
+                }
             }
         }
     }
 
-    // ==================== Sistema de Notificações ====================
+    // ==================== TELA DE CHAT ====================
 
-    Popup {
-        id: notificationPopup
-        x: parent.width - width - 20
-        y: 20
-        width: 300
-        height: notificationContent.implicitHeight + 40
-        modal: false
-        closePolicy: Popup.CloseOnEscape
+    Component {
+        id: chatScreen
 
-        background: Rectangle {
-            color: "#2C2C3F"
-            radius: 8
-            border.color: notificationPopup.notificationType === "error" ? "#f04747" :
-                          notificationPopup.notificationType === "success" ? "#47f063" :
-                          notificationPopup.notificationType === "warning" ? "#faa61a" : "#00C8FF"
-            border.width: 2
-        }
+        Rectangle {
+            color: "#1E1E2E"
 
-        property string notificationTitle: ""
-        property string notificationMessage: ""
-        property string notificationType: "info"
+            // Barra de status
+            Rectangle {
+                id: connectionBar
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 30
 
-        ColumnLayout {
-            id: notificationContent
-            anchors.fill: parent
-            anchors.margins: 20
-            spacing: 8
+                color: appCoordinator.isConnected ? "#47f063" : "#f04747"
 
-            Label {
-                text: notificationPopup.notificationTitle
-                color: "white"
-                font.bold: true
-                font.pixelSize: 14
-                Layout.fillWidth: true
+                Label {
+                    anchors.centerIn: parent
+                    text: appCoordinator.isConnected
+                          ? "🟢 Conectado - " + appCoordinator.currentUser
+                          : "🔴 Desconectado"
+                    color: "white"
+                    font.bold: true
+                }
+
+                // Botão de logout
+                Button {
+                    anchors.right: parent.right
+                    anchors.rightMargin: 5
+                    anchors.verticalCenter: parent.verticalCenter
+                    height: 20
+                    text: "Sair"
+                    flat: true
+
+                    contentItem: Label {
+                        text: parent.text
+                        color: "white"
+                        font.pixelSize: 10
+                    }
+
+                    onClicked: {
+                        if (typeof backend !== 'undefined') {
+                            backend.disconnect()
+                        }
+                        appCoordinator.isLoggedIn = false
+                    }
+                }
+
+                Behavior on color {
+                    ColorAnimation { duration: 300 }
+                }
             }
 
-            Label {
-                text: notificationPopup.notificationMessage
-                color: "#b9bbbe"
-                font.pixelSize: 12
-                wrapMode: Text.Wrap
-                Layout.fillWidth: true
-            }
-        }
+            SplitView {
+                anchors.top: connectionBar.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
 
-        Timer {
-            id: notificationTimer
-            interval: 3000
-            onTriggered: notificationPopup.close()
-        }
+                ChannelList {
+                    id: channelList
+                    SplitView.preferredWidth: 180
+                    SplitView.minimumWidth: 100
+                }
 
-        onOpened: notificationTimer.start()
-    }
+                ChatArea {
+                    id: chatArea
+                    SplitView.fillWidth: true
+                    SplitView.minimumWidth: 300
+                    currentChannel: appCoordinator.currentChannel
+                }
 
-    // Conecta notificações ao EventBus
-    Connections {
-        target: eventBus
-
-        function onNotificationTriggered(title, message, type) {
-            notificationPopup.notificationTitle = title
-            notificationPopup.notificationMessage = message
-            notificationPopup.notificationType = type
-            notificationPopup.open()
-        }
-    }
-
-    // ==================== Debug Console ====================
-
-    // Descomente para ver logs em tempo real
-    /*
-    Rectangle {
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 100
-        color: "#1a1a1a"
-
-        ListView {
-            id: debugConsole
-            anchors.fill: parent
-            anchors.margins: 5
-            clip: true
-
-            model: ListModel {
-                id: debugModel
-            }
-
-            delegate: Text {
-                text: model.message
-                color: "#00ff00"
-                font.family: "Courier"
-                font.pixelSize: 10
+                UserList {
+                    id: userList
+                    SplitView.preferredWidth: 150
+                    SplitView.minimumWidth: 130
+                }
             }
         }
     }
-
-    Connections {
-        target: EventBus
-
-        function onChannelSelected(channelName) {
-            debugModel.append({message: "[EventBus] Canal: " + channelName})
-        }
-
-        function onMessageReceived(channel, messageData) {
-            debugModel.append({message: "[EventBus] MSG em " + channel})
-        }
-    }
-    */
 }

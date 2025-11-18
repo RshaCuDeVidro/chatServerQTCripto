@@ -6,24 +6,113 @@ import "."
 StyledSidebar {
     id: root
     title: "Usuários Online"
-    //color: "#2A2B38"
-    //Layout.preferredWidth: 240
+
+    // ==================== CONFIGURAÇÃO DE STATUS ====================
+
+    readonly property var statusInfo: ({
+        "online":  { color: "#47f063", label: "Online" },
+        "away":    { color: "#faa61a", label: "Ausente" },
+        "offline": { color: "#747f8d", label: "Offline" }
+    })
 
 
-    readonly property var statusInfo: {
-            "online":  { color: "#47f063", label: "Online" },
-            "away":    { color: "#faa61a", label: "Ausente" },
-            "offline": { color: "#747f8d", label: "Offline" }
+    ListModel {
+        id: userListModel
+
+    }
+
+    // ==================== MUDANÇA: Escuta EventBus ====================
+
+    Component.onCompleted: {
+        // Quando status de usuário muda
+        eventBus.userStatusChanged.connect(function(userName, status) {
+            updateUserStatus(userName, status)
+            eventBus.log("UserList: Status atualizado", {user: userName, status: status})
+        })
+
+        // Quando usuário entra em canal
+        eventBus.userJoinedChannel.connect(function(userName, channel) {
+            // Adiciona usuário se não existir
+            var exists = findUserIndex(userName) !== -1
+
+            if (!exists) {
+                addUser(userName, "online")
+                eventBus.log("UserList: Usuário adicionado", userName)
+            } else {
+                updateUserStatus(userName, "online")
+            }
+        })
+
+        // Quando usuário sai do canal
+        eventBus.userLeftChannel.connect(function(userName, channel) {
+            updateUserStatus(userName, "offline")
+            eventBus.log("UserList: Usuário saiu", userName)
+        })
+
+        // Quando lista completa de usuários online é recebida
+        eventBus.onlineUsersUpdated.connect(function(userList) {
+            loadUserList(userList)
+            eventBus.log("UserList: Lista completa carregada", userList.length + " users")
+        })
+    }
+
+    // ==================== FUNÇÕES PÚBLICAS ====================
+
+    function updateUserStatus(userName, newStatus) {
+        var index = findUserIndex(userName)
+
+        if (index !== -1) {
+            userListModel.setProperty(index, "status", newStatus)
+        }
+    }
+
+    function addUser(userName, status) {
+        // Verifica se já existe
+        if (findUserIndex(userName) !== -1) {
+            return
         }
 
+        userListModel.append({
+            name: userName,
+            status: status || "online"
+        })
+    }
 
-    function getStatusColor(statusString) {
+    function removeUser(userName) {
+        var index = findUserIndex(userName)
 
-        return statusColors[statusString] || statusColors.offline
+        if (index !== -1) {
+            userListModel.remove(index)
+        }
+    }
+
+    function loadUserList(userList) {
+        userListModel.clear()
+
+        for (var i = 0; i < userList.length; i++) {
+            var user = userList[i]//
+            addUser(user.username || user.name, user.status || "online")
+            //addUser(userList[i].name, userList[i].status)
+        }
+    }
+
+    function clearUsers() {
+        userListModel.clear()
+    }
+
+    // ==================== FUNÇÕES AUXILIARES ====================
+
+    function findUserIndex(userName) {
+        for (var i = 0; i < userListModel.count; i++) {
+            if (userListModel.get(i).name === userName) {
+                return i
+            }
+        }
+        return -1
     }
 
     function countUsersByStatus(status) {
-        let count = 0
+        var count = 0
         for (var i = 0; i < userListModel.count; i++) {
             if (userListModel.get(i).status === status) {
                 count++
@@ -32,112 +121,15 @@ StyledSidebar {
         return count
     }
 
-    // Função para atualizar status de um usuário
-    function updateUserStatus(userName, newStatus) {
-        for (var i = 0; i < userListModel.count; i++) {
-            if (userListModel.get(i).name === userName) {
-                userListModel.setProperty(i, "status", newStatus)
-                eventBus.log("Status atualizado:", {
-                    user: userName,
-                    status: newStatus
-                })
-                break
-            }
-        }
+    function getStatusColor(statusString) {
+        return statusInfo[statusString] ? statusInfo[statusString].color : statusInfo.offline.color
     }
 
-    // Função para adicionar novo usuário
-    function addUser(userName, status) {
-        userListModel.append({
-            name: userName,
-            status: status || "online"
-        })
+    function getStatusLabel(statusString) {
+        return statusInfo[statusString] ? statusInfo[statusString].label : statusString
     }
 
-    // Função para remover usuário
-    function removeUser(userName) {
-        for (var i = 0; i < userListModel.count; i++) {
-            if (userListModel.get(i).name === userName) {
-                userListModel.remove(i)
-                break
-            }
-        }
-    }
-
-    ListModel {
-        id: userListModel
-
-        // a gente vai ter que ordenar no python
-        // Online
-        ListElement { name: "Alice"; status: "online" }
-        ListElement { name: "Bob"; status: "online" }
-        ListElement { name: "Carlos"; status: "online" }
-        ListElement { name: "Gabriel"; status: "online" }
-        ListElement { name: "Igor"; status: "online" }
-        ListElement { name: "Laura"; status: "online" }
-
-        // Away
-        ListElement { name: "Diana"; status: "away" }
-        ListElement { name: "Julia"; status: "away" }
-        ListElement { name: "Otavio"; status: "away" }
-        ListElement { name: "Tiago"; status: "away" }
-        ListElement { name: "Wagner"; status: "away" }
-
-        // Offline
-        ListElement { name: "Eduardo"; status: "offline" }
-        ListElement { name: "Fernanda"; status: "offline" }
-        ListElement { name: "Helena"; status: "offline" }
-        ListElement { name: "Kevin"; status: "offline" }
-        ListElement { name: "Nina"; status: "offline" }
-        ListElement { name: "Paula"; status: "offline" }
-        ListElement { name: "Vicente"; status: "offline" }
-        ListElement { name: "Yara"; status: "offline" }
-    }
-
-    // Conecta aos eventos do EventBus
-    Component.onCompleted: {
-        // Quando status de usuário muda
-        eventBus.userStatusChanged.connect(function(userName, status) {
-            updateUserStatus(userName, status)
-        })
-
-        // Quando usuário entra em canal
-        eventBus.userJoinedChannel.connect(function(userName, channel) {
-            eventBus.log("Usuário entrou:", {
-                user: userName,
-                channel: channel
-            })
-            // Adiciona usuário se não existir
-            var exists = false
-            for (var i = 0; i < userListModel.count; i++) {
-                if (userListModel.get(i).name === userName) {
-                    exists = true
-                    updateUserStatus(userName, "online")
-                    break
-                }
-            }
-            if (!exists) {
-                addUser(userName, "online")
-            }
-        })
-
-        // Quando usuário sai do canal
-        eventBus.userLeftChannel.connect(function(userName, channel) {
-            eventBus.log("Usuário saiu:", {
-                user: userName,
-                channel: channel
-            })
-            updateUserStatus(userName, "offline")
-        })
-
-        // Quando lista de usuários online é atualizada
-        eventBus.onlineUsersUpdated.connect(function(userList) {
-            userListModel.clear()
-            for (var i = 0; i < userList.length; i++) {
-                 addUser(userList[i].name, userList[i].status)
-            }
-        })
-    }
+    // ==================== UI ====================
 
     ListView {
         id: userView
@@ -150,7 +142,6 @@ StyledSidebar {
 
         ScrollBar.vertical: ScrollBar {
             policy: ScrollBar.AsNeeded
-            //visible: userView.contentHeight > userView.height
             width: 8
             background: Rectangle {
                 color: "transparent"
@@ -158,14 +149,13 @@ StyledSidebar {
             contentItem: Rectangle {
                 radius: 4
                 color: "#37FF00"
-                //color: "#00C8FF"
             }
         }
 
         section.property: "status"
         section.criteria: ViewSection.FullString
-        section.delegate: Rectangle {
 
+        section.delegate: Rectangle {
             width: userView.width
             height: 30
             color: "transparent"
@@ -180,12 +170,11 @@ StyledSidebar {
                     width: 8
                     height: 8
                     radius: 4
-                    //color: getStatusColor(section)
-                    color: statusInfo[section] ? statusInfo[section].color : statusInfo.offline.color
+                    color: root.getStatusColor(section)
                 }
 
                 Label {
-                    text: statusInfo[section] ? statusInfo[section].label : section
+                    text: root.getStatusLabel(section)
                     color: "#b9bbbe"
                     font.pixelSize: 11
                     font.bold: true
@@ -193,7 +182,7 @@ StyledSidebar {
                 }
 
                 Label {
-                    text: countUsersByStatus(section)
+                    text: root.countUsersByStatus(section)
                     color: "#72767d"
                     font.pixelSize: 10
                     font.bold: true
@@ -214,7 +203,6 @@ StyledSidebar {
 
             contentItem: RowLayout {
                 spacing: 8
-
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
                 anchors.leftMargin: 16
@@ -224,9 +212,8 @@ StyledSidebar {
                 Rectangle {
                     width: 5
                     height: 5
-                    radius: 11
-                    //color: getStatusColor(model.status)
-                    color: statusInfo[model.status] ? statusInfo[model.status].color : statusInfo.offline.color
+                    radius: 2.5
+                    color: root.getStatusColor(model.status)
                     Layout.alignment: Qt.AlignVCenter
                 }
 

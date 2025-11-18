@@ -1,0 +1,20 @@
+# Web & Async
+websockets==15.0.1
+
+# Database
+asyncpg==0.30.0
+
+# Cache
+valkey==6.1.0
+
+# Integração Qt + AsyncIOqasync>=0.28.0
+
+# Auth
+bcrypt==5.0.0
+
+# Config
+pydantic-settings==2.12.0
+python-dotenv==1.2.1
+
+# Utils
+python-dateutil==2.9.0

@@ -6,57 +6,126 @@ import "."
 
 Rectangle {
     id: root
-    color: "#2A2B38" // 2C2C3F
+    color: "#2A2B38"
+
+    // ==================== PROPRIEDADES ====================
     property string currentChannel: ""
     property bool hasChannelSelected: currentChannel !== ""
 
+    // ==================== MODELO DE DADOS ====================
+
     ListModel {
         id: chatModel
-        // ListElement{ messageType:"self"; sender: "Você"; message: "aaaaaaaaaaaaaa"; timestamp: "2025-11-06T17:30:00Z"; displayDate: "06/11/2025"; displayTime: "17:30"}
-        // ListElement{ messageType:"other";sender: "OutroUser"; message: "bbbbbbbbbbbbbbbbb"; timestamp: "2025-11-06T17:31:00Z";displayDate: "06/11/2025"; displayTime: "17:31"}
-        // ListElement{ messageType:"other";sender: "Carlos"; message: "cccccccccccccccccccccccccccccccccccccccccccccccccccc";timestamp: "2025-11-06T17:31:30Z"; displayDate: "06/11/2025"; displayTime: "17:31"}
-        // ListElement{ messageType:"system";sender: "Admin"; message: "Amanda entou no canal"; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
-        // ListElement{ messageType:"self";sender: "Você"; message: "d"; timestamp: "2025-11-06T17:32:00Z"; displayDate: "06/11/2025"; displayTime: "17:32"}
     }
 
+    // ==================== MUDANÇA: Escuta EventBus ====================
+
     Component.onCompleted: {
-            // Quando um canal é selecionado
-            eventBus.channelSelected.connect(function(channelName) {
-                root.currentChannel = channelName
-                eventBus.log("ChatArea: Canal mudou para", channelName)
+        // Quando canal é selecionado
+        eventBus.channelSelected.connect(function(channelName) {
+            root.currentChannel = channelName
+            chatModel.clear() // Limpa mensagens antigas
+            eventBus.log("ChatArea: Canal mudou para", channelName)
+        })
 
-                // Aqui você pode carregar histórico do backend
-                // EventBus.loadingStateChanged("chatHistory", true)
-                // backend.loadChannelHistory(channelName)
-            })
+        // Quando mensagem é recebida
+        eventBus.messageReceived.connect(function(channel, messageData) {
+            // Só adiciona se for do canal atual
+            if (channel === root.currentChannel) {
+                addMessage(messageData)
+                eventBus.log("ChatArea: Mensagem adicionada")
+            }
+        })
 
-            // Quando uma mensagem é recebida
-            eventBus.messageReceived.connect(function(channel, messageData) {
-                // Só adiciona se for do canal atual
-                if (channel === root.currentChannel) {
-                    chatModel.append(messageData)
-                    chatListView.positionViewAtEnd()
-                    eventBus.log("Mensagem recebida no canal", channel)
-                } else {
-                    // Incrementa contador de não lidas
-                    eventBus.log("Mensagem em outro canal:", channel)
-                    // Aqui você incrementaria o contador
-                }
-            })
+        // Quando histórico é carregado
+        eventBus.channelHistoryLoaded.connect(function(channel, messages) {
+            if (channel === root.currentChannel) {
+                loadHistory(messages)
+                eventBus.log("ChatArea: Histórico carregado", messages.length + " msgs")
+            }
+        })
+    }
 
-            // Quando histórico é carregado
-            eventBus.channelHistoryLoaded.connect(function(channel, messages) {
-                if (channel === root.currentChannel) {
-                    chatModel.clear()
-                    for (var i = 0; i < messages.length; i++) {
-                        chatModel.append(messages[i])
-                    }
-                    chatListView.positionViewAtEnd()
-                    eventBus.loadingStateChanged("chatHistory", false)
-                }
+    // ==================== FUNÇÕES PÚBLICAS ====================
+
+    function addMessage(messageData) {
+        // Garante que tem todos os campos necessários
+        var msg = {
+            messageType: messageData.messageType || "other",
+            sender: messageData.sender || messageData.username || "Desconhecido",
+            message: messageData.message || "",
+            timestamp: messageData.timestamp || new Date().toISOString(),
+            displayDate: messageData.displayDate || formatDate(messageData.timestamp),
+            displayTime: messageData.displayTime || formatTime(messageData.timestamp)
+        }
+
+        chatModel.append(msg)
+        chatListView.positionViewAtEnd()
+    }
+
+    function loadHistory(messages) {
+        chatModel.clear()
+
+        for (var i = 0; i < messages.length; i++) {
+            var msg = messages[i]
+
+            // Determina tipo baseado no usuário atual
+            var msgType = "other"
+            if (typeof backend !== 'undefined' && msg.username === backend.currentUser) {
+                msgType = "self"
+            } /*else if (msg.username === "Você") {
+                msgType = "self"
+            }*/
+
+            addMessage({
+                messageType: msgType,
+                sender: msg.username,
+                message: msg.message,
+                timestamp: msg.timestamp,
+                displayDate: formatDate(msg.timestamp),
+                displayTime: formatTime(msg.timestamp)
             })
         }
 
+        chatListView.positionViewAtEnd()
+    }
+
+    function addSystemMessage(text) {
+        addMessage({
+            messageType: "system",
+            sender: "Sistema",
+            message: text,
+            timestamp: new Date().toISOString()
+        })
+    }
+
+    function clearMessages() {
+        chatModel.clear()
+    }
+
+    // Funções auxiliares de formatação
+    function formatDate(timestamp) {
+        if (!timestamp) return ""
+
+        var date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp
+        return date.toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        })
+    }
+
+    function formatTime(timestamp) {
+        if (!timestamp) return ""
+
+        var date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp
+        return date.toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit'
+        })
+    }
+
+    // ==================== UI ====================
 
     ColumnLayout {
         id: column
@@ -102,12 +171,12 @@ Rectangle {
                     font.pixelSize: 16
                     color: "#888888"
                     horizontalAlignment: Text.AlignHCenter
-                     Layout.alignment: Qt.AlignHCenter
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
         }
 
-
+        // ListView de mensagens
         ListView {
             id: chatListView
             model: chatModel
@@ -115,41 +184,39 @@ Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: true
             spacing: 8
-            clip: true//
+            clip: true
             reuseItems: true
 
-            boundsBehavior: Flickable.StopAtBounds//pode merda
+            visible: root.hasChannelSelected
+            boundsBehavior: Flickable.StopAtBounds
+
             ScrollBar.vertical: ScrollBar {
                 policy: ScrollBar.AsNeeded
             }
 
             Component.onCompleted: chatListView.positionViewAtEnd()
 
-
             delegate: DelegateChooser {
-                // 1. O 'role' (propriedade) continua o mesmo
                 role: "messageType"
 
-                // 2. Delegate para "other"
                 DelegateChoice {
                     roleValue: "other"
                     MessageDelegateOther { }
                 }
 
-                // 3. Delegate para "self"
                 DelegateChoice {
                     roleValue: "self"
                     MessageDelegateSelf { }
                 }
 
-                //4. Delegate para "system"
                 DelegateChoice {
                     roleValue: "system"
-                    SystemMessageDelegate { } // vou pensar
+                    SystemMessageDelegate { }
                 }
             }
         }
 
+        // Barra de entrada
         InputBar {
             id: inputBar
 
@@ -157,27 +224,19 @@ Rectangle {
             visible: root.hasChannelSelected
             enabled: root.hasChannelSelected
 
+            // ==================== CORRETO: Usa EventBus ====================
             onSendMessage: (msg) => {
-                var now = new Date()
-                // Apenas emite o evento - o próprio ChatArea escutará e adicionará
-                eventBus.emitMessageReceived(
-                    root.currentChannel,
-                    "Você",
-                    msg,
-                    "self",
-                    now
-                )
-
-                eventBus.log("Mensagem enviada:", {
-                    channel: root.currentChannel,
-                    message: msg
-                })
-
-                // Backend também será notificado via EventBus (no main.qml)
+                appCoordinator.sendMessage(root.currentChannel, msg)
+                // Apenas notifica via EventBus
+                // O Coordinator no main.qml escutará e decidirá o que fazer
+                // eventBus.emitMessageReceived(
+                //     root.currentChannel,
+                //     "Você",  // Será substituído pelo currentUser no Coordinator
+                //     msg,
+                //     "self",
+                //     new Date()
+                // )
             }
         }
     }
 }
-
-
-
