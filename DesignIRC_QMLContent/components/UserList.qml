@@ -8,18 +8,31 @@ StyledSidebar {
     id: root
     title: "USUÁRIOS"
 
+    property string currentChannel: ""
+
     // ==================== CONEXÕES BACKEND ====================
     Connections {
         target: backend
         
-        function onUserListUpdated(users) {
-            userListModel.clear()
-            for (var i = 0; i < users.length; i++) {
-                userListModel.append({
-                    "name": users[i],
-                    "statusColor": "#a6e3a1" // Online
-                })
+        function onUserListUpdated(channel, users) {
+            if (channel === root.currentChannel) {
+                updateList(users)
             }
+        }
+    }
+
+    onCurrentChannelChanged: {
+        var users = backend.getUsers(currentChannel)
+        updateList(users)
+    }
+
+    function updateList(users) {
+        userListModel.clear()
+        for (var i = 0; i < users.length; i++) {
+            userListModel.append({
+                "name": users[i],
+                "statusColor": "#a6e3a1" // Online
+            })
         }
     }
 
