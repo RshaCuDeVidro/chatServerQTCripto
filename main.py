@@ -51,7 +51,7 @@ def recvall(sock, n):
 
 class Backend(QObject):
     messageReceived = Signal(str, str, str, str, str) # channel, sender, msg, timestamp, type
-    userListUpdated = Signal(list)
+    userListUpdated = Signal(str, list) # channel, users list
     logReceived = Signal(str, str, str) # timestamp, category, message
     channelHistoryLoaded = Signal(str, list) # channel, messages list
     channelJoined = Signal(str) # channel name
@@ -70,11 +70,17 @@ class Backend(QObject):
         # Gerenciamento de múltiplos canais
         self.joined_channels = set()
         self.channel_store = {} # { "channel_name": [msg_objects] }
+        self.channel_users = {} # { "channel_name": [users_list] }
 
     def log_gui(self, category, message):
         """Emite um log para a interface gráfica"""
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
         self.logReceived.emit(timestamp, category, message)
+
+    @Slot(str, result=list)
+    def getUsers(self, channel):
+        """Retorna a lista de usuários de um canal específico."""
+        return self.channel_users.get(channel, [])
 
     # ... (métodos de criptografia mantidos) ...
     # ================= CRIPTOGRAFIA (RSA + AES-GCM) =================
@@ -318,7 +324,11 @@ class Backend(QObject):
             )
         
         elif msg_type == "user_list":
-            self.userListUpdated.emit(msg.get("users", []))
+            channel = msg.get("channel")
+            users = msg.get("users", [])
+            if channel:
+                self.channel_users[channel] = users
+                self.userListUpdated.emit(channel, users)
         
         elif msg_type == "log_update":
             log_data = msg.get("data", {})
