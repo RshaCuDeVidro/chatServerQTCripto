@@ -120,6 +120,7 @@ ApplicationWindow {
 
                 UserList {
                     id: userList
+                    currentChannel: chatArea.currentChannel
                     SplitView.preferredWidth: 200
                     SplitView.minimumWidth: 150
                     SplitView.maximumWidth: 250

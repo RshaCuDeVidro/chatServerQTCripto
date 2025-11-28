@@ -223,18 +223,17 @@ def handle_client(client_socket, addr):
                     new_channel = request.get("channel")
                     username = clients[client_socket]["username"]
                     
-                    # Cria canal se não existir
+                    # cria canal se não existir
                     if new_channel not in channels:
                         channels[new_channel] = []
                         log_event("SERVER", f"Canal #{new_channel} criado por {username}")
 
-                    # Adiciona ao set de canais (não remove dos outros)
+                    # Adiciona ao set de canais
                     clients[client_socket]["joined_channels"].add(new_channel)
                     log_event("CLIENT", f"{username} entrou no canal #{new_channel}")
                     
-                    history = [] # Histórico vazio ao entrar (estilo WhatsApp)
+                    history = [] 
                     
-                    # Envia confirmação de entrada (sem histórico antigo)
                     response = json.dumps({
                         "type": "channel_joined",
                         "channel": new_channel,
