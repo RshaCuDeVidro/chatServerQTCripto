@@ -79,10 +79,13 @@ Rectangle {
                 spacing: 1
                 
                 Repeater {
-                    model: ["Client", "Server", "Network", "Debug"]
+                    model: ["Client"]//, "Server", "Network", "Debug"]
                     delegate: Rectangle {
-                        width: 100
+                        //width: 100
+                        //height: parent.height
+                        width: parent.width
                         height: parent.height
+
                         color: index === 0 ? "#313244" : "transparent"
                         
                         Label {
